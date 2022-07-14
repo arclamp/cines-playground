@@ -39,6 +39,42 @@ async function getNetwork() {
     }
 }
 
+function computeNodeTable(nodes) {
+    let table = {};
+    for (let node of nodes) {
+        table[node.id] = node;
+    }
+    return table;
+}
+
+function visualizeNetwork(network, point, line) {
+    const nodes = network.nodes;
+    const edges = network.edges;
+
+    const nodeTable = computeNodeTable(nodes);
+
+    // Assign random positions to all nodes.
+    const randCoord = (max) => (Math.random() * 2 * max) - max;
+    for (let node of nodes) {
+        node.position = {
+            x: randCoord(300),
+            y: randCoord(300),
+        };
+    }
+
+    // Display the nodes.
+    point.data(nodes.map((n) => n.position))
+        .draw();
+
+    // Display the edges.
+    const lineData = edges.map((e) => [
+        nodeTable[e.source].position,
+        nodeTable[e.target].position,
+    ]);
+    line.data(lineData)
+        .draw();
+}
+
 const network = await getNetwork();
 console.log(network);
 
@@ -52,28 +88,16 @@ const layer = map.createLayer('feature', {
     features: ["point", "line"],
 });
 
-const pointData = [
-    {x: 0, y: 0},
-];
-
-const point = layer.createFeature("point")
-    .data(pointData)
-    .style({
-        strokeColor: "black",
-        fillColor: "red",
-    });
-
-point.draw();
-
-const lineData = [
-    [{x: -50, y: 0}, {x: 30, y: 60}],
-];
-
 const line = layer.createFeature("line")
-    .data(lineData)
     .style({
         strokeColor: "blue",
         strokeWidth: 2,
     });
 
-line.draw();
+const point = layer.createFeature("point")
+    .style({
+        strokeColor: "black",
+        fillColor: "red",
+    });
+
+visualizeNetwork(network, point, line);
