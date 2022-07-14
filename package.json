@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "geojs": "^1.10.9"
+  }
+}
