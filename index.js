@@ -49,7 +49,7 @@ const map = geo.map({
 });
 
 const layer = map.createLayer('feature', {
-    features: ["point"],
+    features: ["point", "line"],
 });
 
 const pointData = [
@@ -64,3 +64,16 @@ const point = layer.createFeature("point")
     });
 
 point.draw();
+
+const lineData = [
+    [{x: -50, y: 0}, {x: 30, y: 60}],
+];
+
+const line = layer.createFeature("line")
+    .data(lineData)
+    .style({
+        strokeColor: "blue",
+        strokeWidth: 2,
+    });
+
+line.draw();
