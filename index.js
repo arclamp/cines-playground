@@ -63,6 +63,27 @@ function visualizeNetwork(network, point, line) {
                 .draw();
         });
 
+    point.geoOn(geo.event.feature.mouseclick, function (evt) {
+        const data = evt.data;
+
+        // Pin/unpin a node by setting/deleting its fx/fy properties.
+        if (data.hasOwnProperty('fx')) {
+            delete data.fx;
+            delete data.fy;
+        } else {
+            data.fx = data.x;
+            data.fy = data.y;
+        }
+
+        // Ask GeoJS to redraw the points.
+        this.modified();
+        this.draw();
+
+        // Kick the simulation.
+        sim.alpha(0.3)
+            .restart();
+    })
+
     sim.restart();
 }
 
@@ -89,21 +110,6 @@ const point = layer.createFeature("point")
     .style({
         strokeColor: "black",
         fillColor: (d) => d.hasOwnProperty('fx') ? "blue" : "red",
-    })
-    .geoOn(geo.event.feature.mouseclick, function (evt) {
-        const data = evt.data;
-        console.log(evt);
-
-        if (data.hasOwnProperty('fx')) {
-            delete data.fx;
-            delete data.fy;
-        } else {
-            data.fx = data.x;
-            data.fy = data.y;
-        }
-
-        this.modified();
-        this.draw();
-    })
+    });
 
 visualizeNetwork(network, point, line);
