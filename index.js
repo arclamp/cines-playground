@@ -96,7 +96,22 @@ const line = layer.createFeature("line")
 const point = layer.createFeature("point")
     .style({
         strokeColor: "black",
-        fillColor: "red",
-    });
+        fillColor: (d) => d.hasOwnProperty('fx') ? "blue" : "red",
+    })
+    .geoOn(geo.event.feature.mouseclick, function (evt) {
+        const data = evt.data;
+        console.log(evt);
+
+        if (data.hasOwnProperty('fx')) {
+            delete data.fx;
+            delete data.fy;
+        } else {
+            data.fx = data.x;
+            data.fy = data.y;
+        }
+
+        this.modified();
+        this.draw();
+    })
 
 visualizeNetwork(network, point, line);
