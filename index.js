@@ -40,14 +40,6 @@ async function getNetwork() {
     }
 }
 
-function computeNodeTable(nodes) {
-    let table = {};
-    for (let node of nodes) {
-        table[node.id] = node;
-    }
-    return table;
-}
-
 function visualizeNetwork(network, point, line) {
     const nodes = network.nodes;
     const edges = network.edges;
