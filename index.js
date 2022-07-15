@@ -1,4 +1,5 @@
 import './node_modules/geojs/geo.min.js';
+import './node_modules/d3/dist/d3.min.js';
 
 async function getNetwork() {
     const resp = await fetch('network.dat');
@@ -51,28 +52,26 @@ function visualizeNetwork(network, point, line) {
     const nodes = network.nodes;
     const edges = network.edges;
 
-    const nodeTable = computeNodeTable(nodes);
+    const sim = d3.forceSimulation(nodes)
+        .force('center', d3.forceCenter())
+        .force('collide', d3.forceCollide().radius(3))
+        .force('link', d3.forceLink(edges).distance(10))
+        .force('charge', d3.forceManyBody().strength(-2))
+        .on('tick', () => {
+            point.data(nodes)
+                .draw();
 
-    // Assign random positions to all nodes.
-    const randCoord = (max) => (Math.random() * 2 * max) - max;
-    for (let node of nodes) {
-        node.position = {
-            x: randCoord(300),
-            y: randCoord(300),
-        };
-    }
+            line.data(edges)
+                .line((item) => {
+                    return [
+                        [item.source.x, item.source.y],
+                        [item.target.x, item.target.y],
+                    ]
+                })
+                .draw();
+        });
 
-    // Display the nodes.
-    point.data(nodes.map((n) => n.position))
-        .draw();
-
-    // Display the edges.
-    const lineData = edges.map((e) => [
-        nodeTable[e.source].position,
-        nodeTable[e.target].position,
-    ]);
-    line.data(lineData)
-        .draw();
+    sim.restart();
 }
 
 const network = await getNetwork();
@@ -91,7 +90,7 @@ const layer = map.createLayer('feature', {
 const line = layer.createFeature("line")
     .style({
         strokeColor: "blue",
-        strokeWidth: 2,
+        strokeWidth: 1,
     });
 
 const point = layer.createFeature("point")
