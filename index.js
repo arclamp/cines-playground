@@ -12,6 +12,9 @@ async function getNetwork() {
         if (!nodes.hasOwnProperty(id)) {
             nodes[id] = {
                 id,
+                fixed: false,
+                fx: null,
+                fy: null,
             };
         }
     }
@@ -50,29 +53,24 @@ function visualizeNetwork(network, point, line) {
         .force('link', d3.forceLink(edges).distance(10))
         .force('charge', d3.forceManyBody().strength(-2))
         .on('tick', () => {
-            point.data(nodes)
-                .draw();
-
-            line.data(edges)
-                .line((item) => {
-                    return [
-                        [item.source.x, item.source.y],
-                        [item.target.x, item.target.y],
-                    ]
-                })
-                .draw();
+            point.data(nodes).draw();
+            line.data(edges).draw();
         });
 
+    let node = null;
+    let startPos = null;
+
+    
     point.geoOn(geo.event.feature.mouseclick, function (evt) {
         const data = evt.data;
 
         // Pin/unpin a node by setting/deleting its fx/fy properties.
-        if (data.hasOwnProperty('fx')) {
-            delete data.fx;
-            delete data.fy;
-        } else {
+        data.fixed = !data.fixed;
+        if (data.fixed) {
             data.fx = data.x;
             data.fy = data.y;
+        } else {
+            data.fx = data.fy = null;
         }
 
         // Ask GeoJS to redraw the points.
@@ -83,6 +81,39 @@ function visualizeNetwork(network, point, line) {
         sim.alpha(0.3)
             .restart();
     })
+        .geoOn(geo.event.actionmove, function (evt) {
+            node.fx = startPos.x + evt.mouse.geo.x - evt.state.origin.geo.x;
+            node.fy = startPos.y + evt.mouse.geo.y - evt.state.origin.geo.y;
+
+            point.dataTime().modified();
+            point.draw();
+
+            line.dataTime().modified();
+            line.draw();
+
+            sim.alpha(0.3).restart();
+        })
+        .geoOn(geo.event.feature.mouseon, function (evt) {
+            node = evt.data;
+            startPos = {
+                x: node.x,
+                y: node.y,
+            };
+            map.interactor().addAction({
+                action: 'dragnode',
+                name: 'myaction',
+                owner: 'me',
+                input: 'left'
+            });
+        })
+        .geoOn(geo.event.actionup, function (evt) {
+            if (!node.fixed) {
+                node.fx = node.fy = null;
+            }
+            node = null;
+
+            map.interactor().removeAction(undefined, undefined, 'me');
+        })
 
     sim.restart();
 }
@@ -94,22 +125,39 @@ const map = geo.map({
     node: "#map",
     center: {x: 0, y: 0},
     zoom: 0,
+    gcs: "+proj=longlat +axis=enu",
+    ingcs: "+proj=longlat +axis=enu",
+    maxBounds: {
+        left: -100,
+        right: 100,
+        bottom: -100,
+        top: 100,
+    }
 });
 
 const layer = map.createLayer('feature', {
-    features: ["point", "line"],
+    features: ["marker", "line"],
 });
 
 const line = layer.createFeature("line")
+    .line((item) => {
+        return [
+            [item.source.x, item.source.y],
+            [item.target.x, item.target.y],
+        ]
+    })
     .style({
         strokeColor: "blue",
         strokeWidth: 1,
     });
 
-const point = layer.createFeature("point")
+const point = layer.createFeature("marker")
     .style({
         strokeColor: "black",
-        fillColor: (d) => d.hasOwnProperty('fx') ? "blue" : "red",
+        fillColor: (d) => d.fixed ? "blue" : "red",
+        scaleWithZoom: geo.markerFeature.scaleMode.all,
+        radius: 2,
+        strokeWidth: 0.05,
     });
 
 visualizeNetwork(network, point, line);
