@@ -114,6 +114,19 @@ function visualizeNetwork(network, point, line) {
 
             map.interactor().removeAction(undefined, undefined, 'me');
         })
+        .geoOn(geo.event.feature.mouseover, function (evt) {
+            const data = evt.data;
+
+            tooltip.position({
+                x: data.x,
+                y: data.y,
+            });
+            tooltipElem.textContent = `${data.id}${data.fixed ? " (fixed)": ""}: (${data.x}, ${data.y})`;
+            tooltipElem.classList.toggle("hidden");
+        })
+        .geoOn(geo.event.feature.mouseout, function (evt) {
+            tooltipElem.classList.toggle("hidden");
+        })
 
     sim.restart();
 }
@@ -159,5 +172,18 @@ const point = layer.createFeature("marker")
         radius: 2,
         strokeWidth: 0.05,
     });
+
+const uiLayer = map.createLayer("ui", {
+    zIndex: 2,
+});
+const tooltip = uiLayer.createWidget("dom", {
+    position: {
+        x: 0,
+        y: 0,
+    }
+});
+const tooltipElem = tooltip.canvas();
+tooltipElem.classList.add("tooltip");
+tooltipElem.classList.add("hidden");
 
 visualizeNetwork(network, point, line);
