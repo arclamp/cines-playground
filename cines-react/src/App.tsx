@@ -61,6 +61,7 @@ function ColorMenu({ description, options, setExternalState }: ColorMenuProps) {
 function App() {
   const [nodeColor, setNodeColor] = useState("");
   const [edgeColor, setEdgeColor] = useState("");
+  const [layout, setLayout] = useState("");
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -79,12 +80,17 @@ function App() {
             options={["lemonchiffon", "teal", "orchid"]}
             setExternalState={setEdgeColor}
           />
-          <Button color="inherit">Layout</Button>
+          <ColorMenu
+            description="Select a layout"
+            options={["force", "circle", "kaluza-klein manifold"]}
+            setExternalState={setLayout}
+          />
         </Toolbar>
       </AppBar>
       <Graph
         nodeColor={nodeColor}
         edgeColor={edgeColor}
+        layout={layout}
       />
     </Box>
   );
