@@ -1,4 +1,4 @@
-import { useState, MouseEvent } from 'react';
+import { useState, useEffect, MouseEvent } from 'react';
 
 import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
@@ -28,7 +28,9 @@ function ToolbarMenu({ description, options, setExternalState }: ToolbarMenuProp
     setAnchorEl(null);
   };
 
-  setExternalState(optionList[selectedIndex]);
+  useEffect(() => {
+    setExternalState(optionList[selectedIndex]);
+  });
 
   return (
     <div>
