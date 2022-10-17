@@ -13,7 +13,7 @@ function Graph({ nodeColor, edgeColor, layout }: GraphProps) {
 
   const mapStyle = {
     width: "100%",
-    height: "100%",
+    height: "calc(100vh - 64px)",
     padding: 0,
     margin: 0,
     overflow: "hidden",
