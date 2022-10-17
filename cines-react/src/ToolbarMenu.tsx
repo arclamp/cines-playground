@@ -5,12 +5,13 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 
 interface ToolbarMenuProps {
-  description: string,
-  options: string[],
+  header: string;
+  description: string;
+  options: string[];
   setExternalState: (color: string) => void;
 }
 
-function ToolbarMenu({ description, options, setExternalState }: ToolbarMenuProps) {
+function ToolbarMenu({ header, description, options, setExternalState }: ToolbarMenuProps) {
   const optionList = [description, ...options];
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -34,7 +35,7 @@ function ToolbarMenu({ description, options, setExternalState }: ToolbarMenuProp
 
   return (
     <div>
-      <Button color="inherit" onClick={handleClick}>Node color:<br/>{optionList[selectedIndex]}</Button>
+      <Button color="inherit" onClick={handleClick}>{header}:<br/>{optionList[selectedIndex]}</Button>
       <Menu
         anchorEl={anchorEl}
         open={open}

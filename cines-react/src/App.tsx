@@ -20,16 +20,19 @@ function App() {
             CINES Playground
           </Typography>
           <ToolbarMenu
+            header="Node color"
             description="Color for nodes"
             options={["firebrick", "seagreen", "skyblue"]}
             setExternalState={setNodeColor}
           />
           <ToolbarMenu
+            header="Edge color"
             description="Color for edges"
             options={["lemonchiffon", "teal", "orchid"]}
             setExternalState={setEdgeColor}
           />
           <ToolbarMenu
+            header="Layout"
             description="Select a layout"
             options={["force", "circle", "kaluza-klein manifold"]}
             setExternalState={setLayout}
