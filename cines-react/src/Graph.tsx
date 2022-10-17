@@ -1,13 +1,15 @@
 import { useRef, useEffect } from 'react';
 import geo, { Map } from 'geojs';
+import { GraphData } from './util';
 
 interface GraphProps {
-  nodeColor: string,
-  edgeColor: string,
-  layout: string,
+  graphData: GraphData;
+  nodeColor: string;
+  edgeColor: string;
+  layout: string;
 };
 
-function Graph({ nodeColor, edgeColor, layout }: GraphProps) {
+function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
   const div = useRef<HTMLDivElement>(null);
   const map = useRef<GeojsMap | null>(null);
 
@@ -41,6 +43,10 @@ function Graph({ nodeColor, edgeColor, layout }: GraphProps) {
 
     map.current.createLayer("osm");
   }, []);
+
+  useEffect(() => {
+    console.log(graphData);
+  }, [graphData]);
 
   return (
     <div ref={div} style={mapStyle} />

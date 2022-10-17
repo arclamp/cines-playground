@@ -65,6 +65,7 @@ function App() {
         </Toolbar>
       </AppBar>
       <Graph
+        graphData={graphData}
         nodeColor={nodeColor}
         edgeColor={edgeColor}
         layout={layout}
