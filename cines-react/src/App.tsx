@@ -8,26 +8,31 @@ import Typography from '@mui/material/Typography';
 import { GraphData, fetchNetworkData, getNetwork } from './util';
 import './App.css';
 
+const emptyGraph = {
+  nodes: [],
+  edges: [],
+};
+
 function App() {
   const [nodeColor, setNodeColor] = useState("");
   const [edgeColor, setEdgeColor] = useState("");
   const [layout, setLayout] = useState("");
   const [graphDataset, setGraphDataset] = useState("");
-  const [graphData, setGraphData] = useState<GraphData>({ nodes: [], edges: [] });
+  const [graphData, setGraphData] = useState<GraphData>(emptyGraph);
 
+  // Process new grqph data when the selection changes.
   useEffect(() => {
     const processData = async () => {
-      const networkData = await fetchNetworkData(graphDataset);
-      console.log(networkData);
-      setGraphData(getNetwork(networkData));
+      if (graphDataset) {
+        const networkData = await fetchNetworkData(graphDataset);
+        setGraphData(getNetwork(networkData));
+      } else {
+        setGraphData(emptyGraph);
+      }
     };
 
     processData();
   }, [graphDataset]);
-
-  useEffect(() => {
-    console.log(graphData);
-  }, [graphData]);
 
   return (
     <Box sx={{ flexGrow: 1 }}>

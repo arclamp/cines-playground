@@ -1,6 +1,6 @@
 import { useRef, useEffect } from 'react';
-import geo, { Map } from 'geojs';
-import { GraphData } from './util';
+import geo from 'geojs';
+import { GraphData, Node, Edge } from './util';
 
 interface GraphProps {
   graphData: GraphData;
@@ -12,6 +12,10 @@ interface GraphProps {
 function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
   const div = useRef<HTMLDivElement>(null);
   const map = useRef<GeojsMap | null>(null);
+  const line = useRef<LineFeature | null>(null);
+  const marker = useRef<MarkerFeature | null>(null);
+  const nodes = useRef<Node[]>([]);
+  const edges = useRef<Edge[]>([]);
 
   const mapStyle = {
     width: "100%",
@@ -20,6 +24,35 @@ function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
     margin: 0,
     overflow: "hidden",
   };
+
+  function updateGraph() {
+    nodes.current = graphData.nodes;
+    edges.current = graphData.edges;
+
+    for (let e of edges.current) {
+      if (typeof e.source === "number") {
+        e.source = nodes.current[e.source];
+      }
+
+      if (typeof e.target === "number") {
+        e.target = nodes.current[e.target];
+      }
+    }
+
+    for (let n of nodes.current) {
+      n.x = 100 * (Math.random() - 0.5) * 2;
+      n.y = 100 * (Math.random() - 0.5) * 2;
+    }
+
+    console.log(nodes.current, edges.current);
+
+    if (!marker.current || !line.current) {
+      throw new Error("error");
+    }
+
+    marker.current.data(nodes.current).draw();
+    line.current.data(edges.current).draw();
+  }
 
   // Initialize the geojs map.
   useEffect(() => {
@@ -41,11 +74,36 @@ function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
       throw new Error("map was not initialized");
     }
 
-    map.current.createLayer("osm");
+    const layer = map.current.createLayer("feature", {
+      features: ["marker", "line"],
+    });
+
+    line.current = layer.createFeature("line")
+      .line((item: LineSpec) => {
+        return [
+          [item.source.x, item.source.y],
+          [item.target.x, item.target.y],
+        ];
+      })
+      .style({
+        strokeColor: "blue",
+        strokeWidth: 1,
+      });
+
+    marker.current = layer.createFeature("marker")
+      .style({
+        strokeColor: "black",
+        fillColor: (d) => d.fixed ? "blue" : "red",
+        scaleWithZoom: geo.markerFeature.scaleMode.all,
+        radius: 2,
+        strokeWidth: 0.05,
+      });
+
+    updateGraph();
   }, []);
 
   useEffect(() => {
-    console.log(graphData);
+    updateGraph();
   }, [graphData]);
 
   return (

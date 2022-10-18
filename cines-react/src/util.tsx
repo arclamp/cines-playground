@@ -1,6 +1,8 @@
 interface Node {
   id: number;
   fixed: boolean;
+  x: number;
+  y: number;
   fx: number | null;
   fy: number | null;
 }
@@ -10,8 +12,8 @@ type NodeTable = {
 }
 
 interface Edge {
-  source: number;
-  target: number;
+  source: number | Node;
+  target: number | Node;
 }
 
 interface GraphData {
@@ -33,6 +35,8 @@ function getNetwork(text: string): GraphData {
       nodes[id] = {
         id,
         fixed: false,
+        x: 0,
+        y: 0,
         fx: null,
         fy: null,
       };
@@ -63,5 +67,5 @@ function getNetwork(text: string): GraphData {
   }
 }
 
-export type { GraphData };
+export type { GraphData, Node, Edge };
 export { fetchNetworkData, getNetwork };

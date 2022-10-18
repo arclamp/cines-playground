@@ -17,8 +17,46 @@ interface MapSpec {
   }
 }
 
+interface FeatureLayerOptions {
+  features: string[];
+}
+
 declare class GeojsMap {
-  createLayer(layerType: string): void;
+  createLayer(type: "feature", options: FeatureLayerOptions): FeatureLayer;
+}
+
+declare class FeatureLayer {
+  createFeature(type: "line"): LineFeature;
+  createFeature(type: "marker"): MarkerFeature;
+}
+
+interface LineSpec {
+  source: {
+    x: number;
+    y: number;
+  }
+  target: {
+    x: number;
+    y: number;
+  }
+}
+
+interface StyleSpec {
+    strokeColor: string;
+    fillColor: (item: any) => string;
+    scaleWithZoom: 0 | 1 | 2 | 3;
+    radius: number;
+    strokeWidth: number;
+}
+
+declare class LineFeature {
+  line(fn: (item: LineSpec) => [[number, number], [number, number]])
+  data(data: any[])
+}
+
+declare class MarkerFeature {
+  style(spec: StyleSpec)
+  data(data: any[])
 }
 
 declare function map(spec: MapSpec): GeojsMap;
