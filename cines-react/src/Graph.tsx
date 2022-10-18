@@ -86,14 +86,14 @@ function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
         ];
       })
       .style({
-        strokeColor: "blue",
+        strokeColor: edgeColor,
         strokeWidth: 1,
       });
 
     marker.current = layer.createFeature("marker")
       .style({
         strokeColor: "black",
-        fillColor: (d) => d.fixed ? "blue" : "red",
+        fillColor: (d) => d.fixed ? "blue" : nodeColor,
         scaleWithZoom: geo.markerFeature.scaleMode.all,
         radius: 2,
         strokeWidth: 0.05,
@@ -105,6 +105,24 @@ function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
   useEffect(() => {
     updateGraph();
   }, [graphData]);
+
+  useEffect(() => {
+    if (marker.current) {
+      marker.current.style({
+        fillColor: (d) => d.fixed ? "blue" : nodeColor,
+      })
+        .draw();
+    }
+  }, [nodeColor]);
+
+  useEffect(() => {
+    if (line.current) {
+      line.current.style({
+        strokeColor: edgeColor,
+      })
+        .draw();
+    }
+  }, [edgeColor]);
 
   return (
     <div ref={div} style={mapStyle} />

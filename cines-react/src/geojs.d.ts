@@ -41,21 +41,27 @@ interface LineSpec {
   }
 }
 
-interface StyleSpec {
-    strokeColor: string;
-    fillColor: (item: any) => string;
-    scaleWithZoom: 0 | 1 | 2 | 3;
-    radius: number;
-    strokeWidth: number;
+interface LineStyleSpec {
+  strokeColor?: string;
+  strokeWidth?: number;
 }
 
 declare class LineFeature {
   line(fn: (item: LineSpec) => [[number, number], [number, number]])
+  style(spec: LineStyleSpec)
   data(data: any[])
 }
 
+interface MarkerStyleSpec {
+    strokeColor?: string;
+    fillColor?: (item: any) => string;
+    scaleWithZoom?: 0 | 1 | 2 | 3;
+    radius?: number;
+    strokeWidth?: number;
+}
+
 declare class MarkerFeature {
-  style(spec: StyleSpec)
+  style(spec: MarkerStyleSpec)
   data(data: any[])
 }
 
