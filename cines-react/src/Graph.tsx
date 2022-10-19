@@ -89,6 +89,23 @@ function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
         strokeWidth: 0.05,
       });
 
+    marker.current!.geoOn(geo.event.feature.mouseclick, function (evt) {
+      const data = evt.data;
+
+      // Pin/unpin a node by setting/deleting its fx/fy properties.
+      data.fixed = !data.fixed;
+      if (data.fixed) {
+        data.fx = data.x;
+        data.fy = data.y;
+      } else {
+        data.fx = data.fy = null;
+      }
+
+      // Kick the simulation.
+      sim.current.alpha(0.3)
+          .restart();
+    });
+
     let node: Node | null = null;
     let startPos = { x: 0, y: 0 };
     marker.current!.geoOn(geo.event.feature.mouseon, function (evt) {
