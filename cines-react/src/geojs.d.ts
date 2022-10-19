@@ -23,6 +23,7 @@ interface FeatureLayerOptions {
 
 declare class GeojsMap {
   createLayer(type: "feature", options: FeatureLayerOptions): FeatureLayer;
+  interactor(): any;
 }
 
 declare class FeatureLayer {
@@ -50,6 +51,8 @@ declare class LineFeature {
   line(fn: (item: LineSpec) => [[number, number], [number, number]])
   style(spec: LineStyleSpec)
   data(data: any[])
+  draw()
+  dataTime()
 }
 
 interface MarkerStyleSpec {
@@ -63,6 +66,10 @@ interface MarkerStyleSpec {
 declare class MarkerFeature {
   style(spec: MarkerStyleSpec)
   data(data: any[])
+  geoOn(eventType: string, cb: (evt: any) => void)
+  dataTime()
+  modified()
+  draw()
 }
 
 declare function map(spec: MapSpec): GeojsMap;

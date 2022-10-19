@@ -89,6 +89,41 @@ function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
         strokeWidth: 0.05,
       });
 
+    let node: Node | null = null;
+    let startPos = { x: 0, y: 0 };
+    marker.current!.geoOn(geo.event.feature.mouseon, function (evt) {
+      node = evt.data;
+      startPos = {
+        x: node!.x,
+        y: node!.y,
+      };
+      map.current!.interactor().addAction({
+        action: "dragnode",
+        name: "myaction",
+        owner: "me",
+        input: "left",
+      });
+
+      console.log(node, startPos);
+    }).geoOn(geo.event.actionmove, function (evt: any) {
+      node!.fx = startPos.x + evt.mouse.geo.x - evt.state.origin.geo.x;
+      node!.fy = startPos.y + evt.mouse.geo.y - evt.state.origin.geo.y;
+
+      marker.current!.dataTime().modified();
+      marker.current!.draw();
+
+      line.current!.dataTime().modified();
+      line.current!.draw();
+
+      sim.current.alpha(0.3).restart();
+    }).geoOn(geo.event.actionup, function (evt: any) {
+      if (!node!.fixed) {
+        node!.fx = node!.fy = null;
+      }
+
+      map.current!.interactor().removeAction(undefined, undefined, "me");
+    });
+
     sim.current = forceSimulation(nodes.current)
       .force("center", forceCenter())
       .force("collide", forceCollide().radius(3))
