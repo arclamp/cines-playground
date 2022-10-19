@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react';
 import geo from 'geojs';
+import { forceSimulation, forceCenter, forceManyBody, forceCollide, forceLink, Simulation } from 'd3-force';
 import { GraphData, Node, Edge } from './util';
 
 interface GraphProps {
@@ -9,6 +10,8 @@ interface GraphProps {
   layout: string;
 };
 
+const dummyForce: Simulation<Node, Edge> = forceSimulation();
+
 function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
   const div = useRef<HTMLDivElement>(null);
   const map = useRef<GeojsMap | null>(null);
@@ -16,6 +19,7 @@ function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
   const marker = useRef<MarkerFeature | null>(null);
   const nodes = useRef<Node[]>([]);
   const edges = useRef<Edge[]>([]);
+  const sim = useRef<Simulation<Node, Edge>>(dummyForce);
 
   const mapStyle = {
     width: "100%",
@@ -29,29 +33,15 @@ function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
     nodes.current = graphData.nodes;
     edges.current = graphData.edges;
 
-    for (let e of edges.current) {
-      if (typeof e.source === "number") {
-        e.source = nodes.current[e.source];
-      }
-
-      if (typeof e.target === "number") {
-        e.target = nodes.current[e.target];
-      }
-    }
-
-    for (let n of nodes.current) {
-      n.x = 100 * (Math.random() - 0.5) * 2;
-      n.y = 100 * (Math.random() - 0.5) * 2;
-    }
-
     console.log(nodes.current, edges.current);
 
     if (!marker.current || !line.current) {
       throw new Error("error");
     }
 
-    marker.current.data(nodes.current).draw();
-    line.current.data(edges.current).draw();
+    sim.current.nodes(nodes.current)
+      .force("link", forceLink(edges.current).distance(10))
+      .restart();
   }
 
   // Initialize the geojs map.
@@ -97,6 +87,16 @@ function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
         scaleWithZoom: geo.markerFeature.scaleMode.all,
         radius: 2,
         strokeWidth: 0.05,
+      });
+
+    sim.current = forceSimulation(nodes.current)
+      .force("center", forceCenter())
+      .force("collide", forceCollide().radius(3))
+      .force("link", forceLink(edges.current).distance(10))
+      .force("charge", forceManyBody().strength(-2))
+      .on("tick", () => {
+        marker.current!.data(nodes.current).draw();
+        line.current!.data(edges.current).draw();
       });
 
     updateGraph();
