@@ -17,6 +17,7 @@ function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
   const map = useRef<GeojsMap | null>(null);
   const line = useRef<LineFeature | null>(null);
   const marker = useRef<MarkerFeature | null>(null);
+  const tooltip = useRef<any>(null);
   const nodes = useRef<Node[]>([]);
   const edges = useRef<Edge[]>([]);
   const sim = useRef<Simulation<Node, Edge>>(dummyForce);
@@ -64,6 +65,18 @@ function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
       throw new Error("map was not initialized");
     }
 
+    tooltip.current = map.current.createLayer("ui", {
+      zIndex: 2,
+    }).createWidget("dom", {
+      position: {
+        x: 0,
+        y: 0,
+      },
+    });
+
+    tooltip.current.canvas().classList.add("tooltip");
+    tooltip.current.canvas().classList.add("hidden");
+
     const layer = map.current.createLayer("feature", {
       features: ["marker", "line"],
     });
@@ -104,6 +117,21 @@ function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
       // Kick the simulation.
       sim.current.alpha(0.3)
           .restart();
+    });
+
+    marker.current!.geoOn(geo.event.feature.mouseover, function (evt) {
+      const data = evt.data;
+
+      tooltip.current.position({
+        x: data.x,
+        y: data.y,
+      });
+
+      const tt = tooltip.current.canvas();
+      tt.textContent = `${data.id}${data.fixed ? " (fixed)": ""}: (${data.x}, ${data.y})`;
+      tt.classList.toggle("hidden");
+    }).geoOn(geo.event.feature.mouseout, function (evt: any) {
+      tooltip.current.canvas().classList.toggle("hidden");
     });
 
     let node: Node | null = null;

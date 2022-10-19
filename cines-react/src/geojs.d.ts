@@ -21,8 +21,13 @@ interface FeatureLayerOptions {
   features: string[];
 }
 
+interface UiLayerOptions {
+  zIndex: number;
+}
+
 declare class GeojsMap {
   createLayer(type: "feature", options: FeatureLayerOptions): FeatureLayer;
+  createLayer(type: "ui", options: UiLayerOptions): UiLayer;
   interactor(): any;
 }
 
