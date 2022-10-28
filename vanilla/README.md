@@ -1,4 +1,4 @@
-# cines-playground
+# cines-playground/vanilla
 Playground / experimentation for CINES graph visualization work
 
 ## Build instructions
