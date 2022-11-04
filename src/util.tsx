@@ -5,6 +5,7 @@ interface Node {
   y: number;
   fx: number | null;
   fy: number | null;
+  degree: number;
 }
 
 type NodeTable = {
@@ -39,8 +40,11 @@ function getNetwork(text: string): GraphData {
         y: 0,
         fx: null,
         fy: null,
+        degree: 0,
       };
     }
+
+    nodes[id].degree += 1;
   }
 
   for (let line of text.split("\n")) {

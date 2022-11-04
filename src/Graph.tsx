@@ -128,7 +128,7 @@ function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
       });
 
       const tt = tooltip.current.canvas();
-      tt.textContent = `${data.id}${data.fixed ? " (fixed)": ""}: (${data.x}, ${data.y})`;
+      tt.textContent = `${data.id}${data.fixed ? " (fixed)": ""}: (${data.x}, ${data.y}), degree: ${data.degree}`;
       tt.classList.toggle("hidden");
     }).geoOn(geo.event.feature.mouseout, function (evt: any) {
       tooltip.current.canvas().classList.toggle("hidden");
