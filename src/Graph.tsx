@@ -3,6 +3,9 @@ import geo from 'geojs';
 import { forceSimulation, forceCenter, forceManyBody, forceCollide, forceLink, Simulation } from 'd3-force';
 import { GraphData, Node, Edge } from './util';
 
+import type { NodeDatum } from './util';
+import type { SimulationNodeDatum } from 'd3-force';
+
 interface GraphProps {
   graphData: GraphData;
   nodeColor: string;
@@ -98,7 +101,7 @@ function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
         strokeColor: "black",
         fillColor: (d) => d.fixed ? "blue" : nodeColor,
         scaleWithZoom: geo.markerFeature.scaleMode.all,
-        radius: 2,
+        radius: (d) => Math.sqrt(d.degree),
         strokeWidth: 0.05,
       });
 
@@ -169,9 +172,15 @@ function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
       map.current!.interactor().removeAction(undefined, undefined, "me");
     });
 
+    function isNodeDatum(d: SimulationNodeDatum): d is NodeDatum {
+      return d.hasOwnProperty("degree");
+    }
+
     sim.current = forceSimulation(nodes.current)
       .force("center", forceCenter())
-      .force("collide", forceCollide().radius(3))
+      .force("collide", forceCollide().radius((d: SimulationNodeDatum) => {
+        return isNodeDatum(d) ? Math.sqrt(d.degree) : 10;
+      }))
       .force("link", forceLink(edges.current).distance(10))
       .force("charge", forceManyBody().strength(-2))
       .on("tick", () => {
