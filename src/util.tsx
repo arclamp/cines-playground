@@ -1,3 +1,5 @@
+import type { SimulationNodeDatum } from 'd3-force';
+
 interface Node {
   id: number;
   fixed: boolean;
@@ -5,6 +7,11 @@ interface Node {
   y: number;
   fx: number | null;
   fy: number | null;
+  degree: number;
+}
+
+interface NodeDatum extends SimulationNodeDatum {
+  degree: number;
 }
 
 type NodeTable = {
@@ -39,8 +46,11 @@ function getNetwork(text: string): GraphData {
         y: 0,
         fx: null,
         fy: null,
+        degree: 0,
       };
     }
+
+    nodes[id].degree += 1;
   }
 
   for (let line of text.split("\n")) {
@@ -67,5 +77,5 @@ function getNetwork(text: string): GraphData {
   }
 }
 
-export type { GraphData, Node, Edge };
+export type { GraphData, Node, NodeDatum, Edge };
 export { fetchNetworkData, getNetwork };

@@ -64,7 +64,7 @@ interface MarkerStyleSpec {
     strokeColor?: string;
     fillColor?: (item: any) => string;
     scaleWithZoom?: 0 | 1 | 2 | 3;
-    radius?: number;
+    radius?: number | ((item: any) => number);
     strokeWidth?: number;
 }
 
