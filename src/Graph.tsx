@@ -181,7 +181,7 @@ function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
       .force("collide", forceCollide().radius((d: SimulationNodeDatum) => {
         return isNodeDatum(d) ? Math.sqrt(d.degree) : 10;
       }))
-      .force("link", forceLink(edges.current).distance(10))
+      .force("link", forceLink(edges.current).distance(5))
       .force("charge", forceManyBody().strength(-2))
       .on("tick", () => {
         marker.current!.data(nodes.current).draw();
