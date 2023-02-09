@@ -20,7 +20,7 @@ function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
   const map = useRef<GeojsMap | null>(null);
   const line = useRef<LineFeature | null>(null);
   const marker = useRef<MarkerFeature | null>(null);
-  const tooltip = useRef<any>(null);
+  const uiLayer = useRef<any>(null);
   const nodes = useRef<Node[]>([]);
   const edges = useRef<Edge[]>([]);
   const sim = useRef<Simulation<Node, Edge>>(dummyForce);
@@ -68,17 +68,9 @@ function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
       throw new Error("map was not initialized");
     }
 
-    tooltip.current = map.current.createLayer("ui", {
+    uiLayer.current = map.current.createLayer("ui", {
       zIndex: 2,
-    }).createWidget("dom", {
-      position: {
-        x: 0,
-        y: 0,
-      },
     });
-
-    tooltip.current.canvas().classList.add("tooltip");
-    tooltip.current.canvas().classList.add("hidden");
 
     const layer = map.current.createLayer("feature", {
       features: ["marker", "line"],
@@ -105,36 +97,41 @@ function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
         strokeWidth: 0.05,
       });
 
+    const tooltips: {[index: number]: any} = {};
     marker.current!.geoOn(geo.event.feature.mouseclick, function (evt) {
       const data = evt.data;
+      const modifiers = evt.sourceEvent.modifiers;
 
-      // Pin/unpin a node by setting/deleting its fx/fy properties.
-      data.fixed = !data.fixed;
-      if (data.fixed) {
-        data.fx = data.x;
-        data.fy = data.y;
+      if (modifiers.shift) {
+        // Pin/unpin a node by setting/deleting its fx/fy properties.
+        data.fixed = !data.fixed;
+        if (data.fixed) {
+          data.fx = data.x;
+          data.fy = data.y;
+        } else {
+          data.fx = data.fy = null;
+        }
+
+        // Kick the simulation.
+        sim.current.alpha(0.3)
+            .restart();
       } else {
-        data.fx = data.fy = null;
+        // Toggle the display of the node label.
+        if (tooltips.hasOwnProperty(data.id)) {
+          uiLayer.current!.deleteWidget(tooltips[data.id]);
+          delete tooltips[data.id]
+        } else {
+          tooltips[data.id] = uiLayer.current!.createWidget("dom", {
+            position: {
+              x: data.x,
+              y: data.y,
+            },
+          });
+
+          const tt = tooltips[data.id].canvas();
+          tt.textContent = `${data.id}${data.fixed ? " (fixed)": ""}: degree: ${data.degree}`;
+        }
       }
-
-      // Kick the simulation.
-      sim.current.alpha(0.3)
-          .restart();
-    });
-
-    marker.current!.geoOn(geo.event.feature.mouseover, function (evt) {
-      const data = evt.data;
-
-      tooltip.current.position({
-        x: data.x,
-        y: data.y,
-      });
-
-      const tt = tooltip.current.canvas();
-      tt.textContent = `${data.id}${data.fixed ? " (fixed)": ""}: (${data.x}, ${data.y}), degree: ${data.degree}`;
-      tt.classList.toggle("hidden");
-    }).geoOn(geo.event.feature.mouseout, function (evt: any) {
-      tooltip.current.canvas().classList.toggle("hidden");
     });
 
     let node: Node | null = null;
@@ -156,6 +153,14 @@ function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
     }).geoOn(geo.event.actionmove, function (evt: any) {
       node!.fx = startPos.x + evt.mouse.geo.x - evt.state.origin.geo.x;
       node!.fy = startPos.y + evt.mouse.geo.y - evt.state.origin.geo.y;
+
+      if (tooltips.hasOwnProperty(node!.id)) {
+        const tt = tooltips[node!.id];
+        tt.position({
+          x: node!.fx,
+          y: node!.fy,
+        });
+      }
 
       marker.current!.dataTime().modified();
       marker.current!.draw();
@@ -186,6 +191,16 @@ function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
       .on("tick", () => {
         marker.current!.data(nodes.current).draw();
         line.current!.data(edges.current).draw();
+
+        marker.current!.data().forEach((d: Node) => {
+          if (tooltips.hasOwnProperty(d.id)) {
+            const tt = tooltips[d.id];
+            tt.position({
+              x: d.x,
+              y: d.y,
+            });
+          }
+        });
       });
 
     updateGraph();
