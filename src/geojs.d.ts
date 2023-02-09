@@ -28,6 +28,7 @@ interface UiLayerOptions {
 declare class GeojsMap {
   createLayer(type: "feature", options: FeatureLayerOptions): FeatureLayer;
   createLayer(type: "ui", options: UiLayerOptions): UiLayer;
+  layers(): UiLayer[];
   interactor(): any;
 }
 
@@ -70,7 +71,7 @@ interface MarkerStyleSpec {
 
 declare class MarkerFeature {
   style(spec: MarkerStyleSpec)
-  data(data: any[])
+  data(data?: any[])
   geoOn(eventType: string, cb: (evt: any) => void)
   dataTime()
   modified()
