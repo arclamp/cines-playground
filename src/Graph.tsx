@@ -37,8 +37,6 @@ function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
     nodes.current = graphData.nodes;
     edges.current = graphData.edges;
 
-    console.log(nodes.current, edges.current);
-
     if (!marker.current || !line.current) {
       throw new Error("error");
     }
@@ -148,8 +146,6 @@ function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
         owner: "me",
         input: "left",
       });
-
-      console.log(node, startPos);
     }).geoOn(geo.event.actionmove, function (evt: any) {
       node!.fx = startPos.x + evt.mouse.geo.x - evt.state.origin.geo.x;
       node!.fy = startPos.y + evt.mouse.geo.y - evt.state.origin.geo.y;
