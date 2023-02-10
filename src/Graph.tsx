@@ -57,7 +57,17 @@ const Graph = forwardRef(function Graph({ graphData, nodeColor, edgeColor, layou
 
         /// @ts-ignore
         map.current!.zoom(bz.zoom + Math.log2(0.8));
-      }
+      },
+
+      async screencap() {
+        /// @ts-ignore
+        const imageURL = await map.current!.screenshot();
+
+        const link = document.createElement("a");
+        link.href = imageURL;
+        link.download = "graph.png";
+        link.click();
+      },
     };
   });
 

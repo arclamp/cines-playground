@@ -42,7 +42,8 @@ function App() {
   };
 
   const screencap = () => {
-    console.log("screencap");
+    /// @ts-ignore
+    graph.current!.screencap();
   };
 
   return (
