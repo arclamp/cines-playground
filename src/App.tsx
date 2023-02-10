@@ -41,6 +41,11 @@ function App() {
     graph.current!.zoomToFit();
   };
 
+  const screencap = () => {
+    /// @ts-ignore
+    graph.current!.screencap();
+  };
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
@@ -48,6 +53,8 @@ function App() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1}}>
             CINES Playground
           </Typography>
+
+          <Button color="inherit" onClick={screencap}>Export to PNG</Button>
 
           <Button color="inherit" onClick={zoomToFit}>Zoom to Fit</Button>
 
