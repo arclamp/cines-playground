@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Graph from './Graph';
 import Toolbar from '@mui/material/Toolbar';
 import ToolbarMenu from './ToolbarMenu';
@@ -19,6 +20,7 @@ function App() {
   const [layout, setLayout] = useState("");
   const [graphDataset, setGraphDataset] = useState("");
   const [graphData, setGraphData] = useState<GraphData>(emptyGraph);
+  const graph = useRef<typeof Graph>(null);
 
   // Process new grqph data when the selection changes.
   useEffect(() => {
@@ -34,6 +36,11 @@ function App() {
     processData();
   }, [graphDataset]);
 
+  const zoomToFit = () => {
+    /// @ts-ignore
+    graph.current!.zoomToFit();
+  };
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
@@ -41,6 +48,8 @@ function App() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1}}>
             CINES Playground
           </Typography>
+
+          <Button color="inherit" onClick={zoomToFit}>Zoom to Fit</Button>
 
           <ToolbarMenu
             header="Dataset"
@@ -74,6 +83,7 @@ function App() {
         nodeColor={nodeColor}
         edgeColor={edgeColor}
         layout={layout}
+        ref={graph}
       />
     </Box>
   );
