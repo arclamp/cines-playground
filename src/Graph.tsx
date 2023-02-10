@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import geo from 'geojs';
 import { forceSimulation, forceCenter, forceManyBody, forceCollide, forceLink, Simulation } from 'd3-force';
 import { GraphData, Node, Edge } from './util';
@@ -15,7 +15,7 @@ interface GraphProps {
 
 const dummyForce: Simulation<Node, Edge> = forceSimulation();
 
-function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
+const Graph = forwardRef(function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps, ref) {
   const div = useRef<HTMLDivElement>(null);
   const map = useRef<GeojsMap | null>(null);
   const line = useRef<LineFeature | null>(null);
@@ -24,6 +24,42 @@ function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
   const nodes = useRef<Node[]>([]);
   const edges = useRef<Edge[]>([]);
   const sim = useRef<Simulation<Node, Edge>>(dummyForce);
+
+  useImperativeHandle(ref, () => {
+    return {
+      zoomToFit() {
+        let bounds = {
+          left: Infinity,
+          right: -Infinity,
+          bottom: Infinity,
+          top: -Infinity,
+        };
+        for (const d of marker.current!.data()) {
+          if (d.x < bounds.left) {
+            bounds.left = d.x;
+          }
+          if (d.x > bounds.right) {
+            bounds.right = d.x;
+          }
+          if (d.y < bounds.bottom) {
+            bounds.bottom = d.y;
+          }
+          if (d.y > bounds.top) {
+            bounds.top = d.y;
+          }
+        }
+
+        /// @ts-ignore
+        const bz = map.current!.zoomAndCenterFromBounds(bounds, 0);
+
+        /// @ts-ignore
+        map.current!.center(bz.center);
+
+        /// @ts-ignore
+        map.current!.zoom(bz.zoom + Math.log2(0.8));
+      }
+    };
+  });
 
   const mapStyle = {
     width: "100%",
@@ -227,6 +263,6 @@ function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps) {
   return (
     <div ref={div} style={mapStyle} />
   );
-}
+});
 
 export default Graph;
