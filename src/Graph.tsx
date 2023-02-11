@@ -13,13 +13,6 @@ interface GraphProps {
   layout: string;
 };
 
-interface Bounds {
-  left: number;
-  right: number;
-  bottom: number;
-  top: number;
-}
-
 const mapStyle = {
   width: "100%",
   height: "calc(100vh - 64px)",
@@ -254,18 +247,12 @@ class Graph extends Component<GraphProps, never> {
       top: Math.max(d.y, acc.top),
     }), {left: Infinity, right: -Infinity, bottom: Infinity, top: -Infinity});
 
-    /// @ts-ignore
     const bz = this.map.zoomAndCenterFromBounds(bounds, 0);
-
-    /// @ts-ignore
     this.map.center(bz.center);
-
-    /// @ts-ignore
     this.map.zoom(bz.zoom + Math.log2(0.8));
   }
 
   async screencap() {
-    /// @ts-ignore
     return await this.map.screenshot();
   }
 

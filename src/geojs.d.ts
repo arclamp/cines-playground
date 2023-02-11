@@ -25,11 +25,30 @@ interface UiLayerOptions {
   zIndex: number;
 }
 
+interface Bounds {
+  left: number;
+  right: number;
+  bottom: number;
+  top: number;
+}
+
+interface ZoomAndCenter {
+  zoom: number;
+  center: {
+    x: number;
+    y: number;
+  };
+}
+
 declare class GeojsMap {
   createLayer(type: "feature", options: FeatureLayerOptions): FeatureLayer;
   createLayer(type: "ui", options: UiLayerOptions): UiLayer;
   layers(): UiLayer[];
   interactor(): any;
+  zoomAndCenterFromBounds(bounds: Bounds, rotation: number);
+  center({ x: number, y: number });
+  zoom(zoom: number);
+  screenshot(): Promise<string>;
 }
 
 declare class FeatureLayer {
