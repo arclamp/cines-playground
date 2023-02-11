@@ -37,7 +37,11 @@ function App() {
   }, [graphDataset]);
 
   const zoomToFit = () => {
-    console.log("zoomToFit");
+    if (!graph.current) {
+      throw new Error("Graph not initialized");
+    }
+
+    graph.current.zoomToFit();
   };
 
   const screencap = () => {
