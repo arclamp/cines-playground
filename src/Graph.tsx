@@ -31,7 +31,7 @@ const mapStyle = {
 class Graph extends Component<GraphProps, never> {
   div: RefObject<HTMLDivElement>;
   nodes: Node[] = [];
-  edges: any;
+  edges: Edge[] = [];
   map: GeojsMap = geo.map();
   line: any;
   marker: any;
