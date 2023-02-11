@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import GraphComponent from './GraphComponent';
+import Graph from './Graph';
 import Toolbar from '@mui/material/Toolbar';
 import ToolbarMenu from './ToolbarMenu';
 import Typography from '@mui/material/Typography';
@@ -20,7 +20,7 @@ function App() {
   const [layout, setLayout] = useState("");
   const [graphDataset, setGraphDataset] = useState("");
   const [graphData, setGraphData] = useState<GraphData>(emptyGraph);
-  const graph = useRef<GraphComponent>(null);
+  const graph = useRef<Graph>(null);
 
   // Process new grqph data when the selection changes.
   useEffect(() => {
@@ -96,7 +96,7 @@ function App() {
           />
         </Toolbar>
       </AppBar>
-      <GraphComponent
+      <Graph
         data={graphData}
         nodeColor={nodeColor}
         edgeColor={edgeColor}
