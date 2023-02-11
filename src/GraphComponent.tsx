@@ -80,18 +80,18 @@ class GraphComponent extends Component<GraphProps, never> {
         [item.target.x, item.target.y],
       ])
       .style({
-        strokeColor: this.props.edgeColor,
         strokeWidth: 1,
       });
+    this.styleLines();
 
     this.marker = layer.createFeature("marker")
       .style({
         strokeColor: "black",
-        fillColor: (d: any) => d.fixed ? "blue" : this.props.nodeColor,
         scaleWithZoom: geo.markerFeature.scaleMode.all,
         radius: (d: any) => Math.sqrt(d.degree),
         strokeWidth: 0.05,
       });
+    this.styleNodes();
 
     const tooltips: {[index: number]: any} = {};
     this.marker.geoOn(geo.event.feature.mouseclick, (evt: any) => {
@@ -187,15 +187,11 @@ class GraphComponent extends Component<GraphProps, never> {
       return d.hasOwnProperty("degree");
     }
 
-    this.nodes = structuredClone(this.props.data.nodes);
-    this.edges = structuredClone(this.props.data.edges);
-
-    this.sim = forceSimulation(this.nodes)
+    this.sim = forceSimulation([] as Node[])
       .force("center", forceCenter())
       .force("collide", forceCollide().radius((d: SimulationNodeDatum) => {
         return isNodeDatum(d) ? Math.sqrt(d.degree) : 10;
       }))
-      .force("link", forceLink(this.edges).distance(5))
       .force("charge", forceManyBody().strength(-2))
       .on("tick", () => {
         this.marker.data(this.nodes).draw();
@@ -211,29 +207,43 @@ class GraphComponent extends Component<GraphProps, never> {
           }
         });
       });
+
+    this.copyData();
   }
 
   componentDidUpdate(prevProps: GraphProps) {
     if (prevProps.nodeColor !== this.props.nodeColor) {
-      this.marker.style({
-        fillColor: (d: any) => d.fixed ? "blue" : this.props.nodeColor,
-      }).draw();
+      this.styleNodes();
     }
 
     if (prevProps.edgeColor !== this.props.edgeColor) {
-      this.line.style({
-        strokeColor: this.props.edgeColor,
-      }).draw();
+      this.styleLines();
     }
 
     if (prevProps.data !== this.props.data) {
-      this.nodes = structuredClone(this.props.data.nodes);
-      this.edges = structuredClone(this.props.data.edges);
+      this.copyData();
+    }
+  }
 
-      this.sim.nodes(this.nodes)
+  styleLines() {
+    this.line.style({
+      strokeColor: this.props.edgeColor,
+    }).draw();
+  }
+
+  styleNodes() {
+    this.marker.style({
+      fillColor: (d: any) => d.fixed ? "blue" : this.props.nodeColor,
+    }).draw();
+  }
+
+  copyData() {
+    this.nodes = structuredClone(this.props.data.nodes);
+    this.edges = structuredClone(this.props.data.edges);
+
+    this.sim.nodes(this.nodes)
         .force("link", forceLink(this.edges).distance(10))
         .restart();
-    }
   }
 
   zoomToFit() {
