@@ -44,8 +44,17 @@ function App() {
     graph.current.zoomToFit();
   };
 
-  const screencap = () => {
-    console.log("screencap");
+  const screencap = async () => {
+    if (!graph.current) {
+      throw new Error("Graph not initialized");
+    }
+
+    const imageURL = await graph.current.screencap();
+
+    const link = document.createElement("a");
+    link.href = imageURL;
+    link.download = "graph.png";
+    link.click();
   };
 
   return (

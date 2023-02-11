@@ -254,6 +254,11 @@ class GraphComponent extends Component<GraphProps, never> {
     this.map.zoom(bz.zoom + Math.log2(0.8));
   }
 
+  async screencap() {
+    /// @ts-ignore
+    return await this.map.screenshot();
+  }
+
   render() {
     return (
       <div ref={this.div} style={mapStyle} />
