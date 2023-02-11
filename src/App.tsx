@@ -20,7 +20,7 @@ function App() {
   const [layout, setLayout] = useState("");
   const [graphDataset, setGraphDataset] = useState("");
   const [graphData, setGraphData] = useState<GraphData>(emptyGraph);
-  const graph = useRef<typeof Graph>(null);
+  const graph = useRef<Graph>(null);
 
   // Process new grqph data when the selection changes.
   useEffect(() => {
@@ -37,13 +37,24 @@ function App() {
   }, [graphDataset]);
 
   const zoomToFit = () => {
-    /// @ts-ignore
-    graph.current!.zoomToFit();
+    if (!graph.current) {
+      throw new Error("Graph not initialized");
+    }
+
+    graph.current.zoomToFit();
   };
 
-  const screencap = () => {
-    /// @ts-ignore
-    graph.current!.screencap();
+  const screencap = async () => {
+    if (!graph.current) {
+      throw new Error("Graph not initialized");
+    }
+
+    const imageURL = await graph.current.screencap();
+
+    const link = document.createElement("a");
+    link.href = imageURL;
+    link.download = "graph.png";
+    link.click();
   };
 
   return (
@@ -86,7 +97,7 @@ function App() {
         </Toolbar>
       </AppBar>
       <Graph
-        graphData={graphData}
+        data={graphData}
         nodeColor={nodeColor}
         edgeColor={edgeColor}
         layout={layout}

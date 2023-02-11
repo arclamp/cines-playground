@@ -1,4 +1,4 @@
-import { useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { Component, createRef, RefObject } from 'react';
 import geo from 'geojs';
 import { forceSimulation, forceCenter, forceManyBody, forceCollide, forceLink, Simulation } from 'd3-force';
 import { GraphData, Node, Edge } from './util';
@@ -7,95 +7,50 @@ import type { NodeDatum } from './util';
 import type { SimulationNodeDatum } from 'd3-force';
 
 interface GraphProps {
-  graphData: GraphData;
+  data: GraphData;
   nodeColor: string;
   edgeColor: string;
   layout: string;
 };
 
-const dummyForce: Simulation<Node, Edge> = forceSimulation();
+interface Bounds {
+  left: number;
+  right: number;
+  bottom: number;
+  top: number;
+}
 
-const Graph = forwardRef(function Graph({ graphData, nodeColor, edgeColor, layout }: GraphProps, ref) {
-  const div = useRef<HTMLDivElement>(null);
-  const map = useRef<GeojsMap | null>(null);
-  const line = useRef<LineFeature | null>(null);
-  const marker = useRef<MarkerFeature | null>(null);
-  const uiLayer = useRef<any>(null);
-  const nodes = useRef<Node[]>([]);
-  const edges = useRef<Edge[]>([]);
-  const sim = useRef<Simulation<Node, Edge>>(dummyForce);
+const mapStyle = {
+  width: "100%",
+  height: "calc(100vh - 64px)",
+  padding: 0,
+  margin: 0,
+  overflow: "hidden",
+};
 
-  useImperativeHandle(ref, () => {
-    return {
-      zoomToFit() {
-        let bounds = {
-          left: Infinity,
-          right: -Infinity,
-          bottom: Infinity,
-          top: -Infinity,
-        };
-        for (const d of marker.current!.data()) {
-          if (d.x < bounds.left) {
-            bounds.left = d.x;
-          }
-          if (d.x > bounds.right) {
-            bounds.right = d.x;
-          }
-          if (d.y < bounds.bottom) {
-            bounds.bottom = d.y;
-          }
-          if (d.y > bounds.top) {
-            bounds.top = d.y;
-          }
-        }
+class Graph extends Component<GraphProps, never> {
+  div: RefObject<HTMLDivElement>;
+  nodes: Node[] = [];
+  edges: any;
+  map: GeojsMap = geo.map();
+  line: any;
+  marker: any;
+  labels: any;
+  sim: Simulation<Node, Edge>;
 
-        /// @ts-ignore
-        const bz = map.current!.zoomAndCenterFromBounds(bounds, 0);
-
-        /// @ts-ignore
-        map.current!.center(bz.center);
-
-        /// @ts-ignore
-        map.current!.zoom(bz.zoom + Math.log2(0.8));
-      },
-
-      async screencap() {
-        /// @ts-ignore
-        const imageURL = await map.current!.screenshot();
-
-        const link = document.createElement("a");
-        link.href = imageURL;
-        link.download = "graph.png";
-        link.click();
-      },
-    };
-  });
-
-  const mapStyle = {
-    width: "100%",
-    height: "calc(100vh - 64px)",
-    padding: 0,
-    margin: 0,
-    overflow: "hidden",
-  };
-
-  function updateGraph() {
-    nodes.current = graphData.nodes;
-    edges.current = graphData.edges;
-
-    if (!marker.current || !line.current) {
-      throw new Error("error");
-    }
-
-    sim.current.nodes(nodes.current)
-      .force("link", forceLink(edges.current).distance(10))
-      .restart();
+  constructor(props: GraphProps) {
+    super(props);
+    this.div = createRef<HTMLDivElement>();
+    this.sim = forceSimulation();
   }
 
-  // Initialize the geojs map.
-  useEffect(() => {
-    map.current = geo.map({
-      node: div.current,
+  componentDidMount() {
+    if (!this.div) {
+      throw new Error("GraphComponent: <div> was not initialized");
+    }
+
+    this.map = geo.map({
+      node: this.div.current,
       center: {x: 0, y: 0},
       zoom: 0,
       gcs: "+proj=longlat +axis=enu",
@@ -108,41 +63,38 @@ const Graph = forwardRef(function Graph({ graphData, nodeColor, edgeColor, layou
       },
     });
 
-    if (!map.current) {
-      throw new Error("map was not initialized");
-    }
-
-    uiLayer.current = map.current.createLayer("ui", {
+    this.labels = this.map.createLayer("ui", {
       zIndex: 2,
     });
 
-    const layer = map.current.createLayer("feature", {
-      features: ["marker", "line"],
+    const layer = this.map.createLayer("feature", {
+      features: [
+        "marker",
+        "line",
+      ],
     });
 
-    line.current = layer.createFeature("line")
-      .line((item: LineSpec) => {
-        return [
-          [item.source.x, item.source.y],
-          [item.target.x, item.target.y],
-        ];
-      })
+    this.line = layer.createFeature("line")
+      .line((item: LineSpec) => [
+        [item.source.x, item.source.y],
+        [item.target.x, item.target.y],
+      ])
       .style({
-        strokeColor: edgeColor,
         strokeWidth: 1,
       });
+    this.styleLines();
 
-    marker.current = layer.createFeature("marker")
+    this.marker = layer.createFeature("marker")
       .style({
         strokeColor: "black",
-        fillColor: (d) => d.fixed ? "blue" : nodeColor,
         scaleWithZoom: geo.markerFeature.scaleMode.all,
-        radius: (d) => Math.sqrt(d.degree),
+        radius: (d: any) => Math.sqrt(d.degree),
         strokeWidth: 0.05,
       });
+    this.styleNodes();
 
     const tooltips: {[index: number]: any} = {};
-    marker.current!.geoOn(geo.event.feature.mouseclick, function (evt) {
+    this.marker.geoOn(geo.event.feature.mouseclick, (evt: any) => {
       const data = evt.data;
       const modifiers = evt.sourceEvent.modifiers;
 
@@ -157,15 +109,15 @@ const Graph = forwardRef(function Graph({ graphData, nodeColor, edgeColor, layou
         }
 
         // Kick the simulation.
-        sim.current.alpha(0.3)
+        this.sim.alpha(0.3)
             .restart();
       } else {
         // Toggle the display of the node label.
         if (tooltips.hasOwnProperty(data.id)) {
-          uiLayer.current!.deleteWidget(tooltips[data.id]);
+          this.labels.deleteWidget(tooltips[data.id]);
           delete tooltips[data.id]
         } else {
-          tooltips[data.id] = uiLayer.current!.createWidget("dom", {
+          tooltips[data.id] = this.labels.createWidget("dom", {
             position: {
               x: data.x,
               y: data.y,
@@ -180,61 +132,72 @@ const Graph = forwardRef(function Graph({ graphData, nodeColor, edgeColor, layou
 
     let node: Node | null = null;
     let startPos = { x: 0, y: 0 };
-    marker.current!.geoOn(geo.event.feature.mouseon, function (evt) {
+    this.marker.geoOn(geo.event.feature.mouseon, (evt: any) => {
       node = evt.data;
+      if (!node) {
+        throw new Error("mouseon failed");
+      }
+
       startPos = {
-        x: node!.x,
-        y: node!.y,
+        x: node.x,
+        y: node.y,
       };
-      map.current!.interactor().addAction({
+      this.map.interactor().addAction({
         action: "dragnode",
         name: "myaction",
         owner: "me",
         input: "left",
       });
-    }).geoOn(geo.event.actionmove, function (evt: any) {
-      node!.fx = startPos.x + evt.mouse.geo.x - evt.state.origin.geo.x;
-      node!.fy = startPos.y + evt.mouse.geo.y - evt.state.origin.geo.y;
+    }).geoOn(geo.event.actionmove, (evt: any) => {
+      if (!node) {
+        throw new Error("mouseon failed");
+      }
 
-      if (tooltips.hasOwnProperty(node!.id)) {
-        const tt = tooltips[node!.id];
+      node.fx = startPos.x + evt.mouse.geo.x - evt.state.origin.geo.x;
+      node.fy = startPos.y + evt.mouse.geo.y - evt.state.origin.geo.y;
+
+      if (tooltips.hasOwnProperty(node.id)) {
+        const tt = tooltips[node.id];
         tt.position({
-          x: node!.fx,
-          y: node!.fy,
+          x: node.fx,
+          y: node.fy,
         });
       }
 
-      marker.current!.dataTime().modified();
-      marker.current!.draw();
+      this.marker.dataTime().modified();
+      this.marker.draw();
 
-      line.current!.dataTime().modified();
-      line.current!.draw();
+      this.line.dataTime().modified();
+      this.line.draw();
 
-      sim.current.alpha(0.3).restart();
-    }).geoOn(geo.event.actionup, function (evt: any) {
-      if (!node!.fixed) {
-        node!.fx = node!.fy = null;
+      this.sim.alpha(0.3).restart();
+    }).geoOn(geo.event.actionup, (evt: any) => {
+      if (!node) {
+        throw new Error("mouseon failed");
       }
 
-      map.current!.interactor().removeAction(undefined, undefined, "me");
+      if (!node.fixed) {
+        node.fx = node.fy = null;
+      }
+
+      this.map.interactor().removeAction(undefined, undefined, "me");
     });
 
     function isNodeDatum(d: SimulationNodeDatum): d is NodeDatum {
       return d.hasOwnProperty("degree");
     }
 
-    sim.current = forceSimulation(nodes.current)
+    this.sim = forceSimulation([] as Node[])
       .force("center", forceCenter())
       .force("collide", forceCollide().radius((d: SimulationNodeDatum) => {
         return isNodeDatum(d) ? Math.sqrt(d.degree) : 10;
       }))
-      .force("link", forceLink(edges.current).distance(5))
       .force("charge", forceManyBody().strength(-2))
       .on("tick", () => {
-        marker.current!.data(nodes.current).draw();
-        line.current!.data(edges.current).draw();
+        this.marker.data(this.nodes).draw();
+        this.line.data(this.edges).draw();
 
-        marker.current!.data().forEach((d: Node) => {
+        this.marker.data().forEach((d: Node) => {
           if (tooltips.hasOwnProperty(d.id)) {
             const tt = tooltips[d.id];
             tt.position({
@@ -245,34 +208,72 @@ const Graph = forwardRef(function Graph({ graphData, nodeColor, edgeColor, layou
         });
       });
 
-    updateGraph();
-  }, []);
+    this.copyData();
+  }
 
-  useEffect(() => {
-    updateGraph();
-  }, [graphData]);
-
-  useEffect(() => {
-    if (marker.current) {
-      marker.current.style({
-        fillColor: (d) => d.fixed ? "blue" : nodeColor,
-      })
-        .draw();
+  componentDidUpdate(prevProps: GraphProps) {
+    if (prevProps.nodeColor !== this.props.nodeColor) {
+      this.styleNodes();
     }
-  }, [nodeColor]);
 
-  useEffect(() => {
-    if (line.current) {
-      line.current.style({
-        strokeColor: edgeColor,
-      })
-        .draw();
+    if (prevProps.edgeColor !== this.props.edgeColor) {
+      this.styleLines();
     }
-  }, [edgeColor]);
 
-  return (
-    <div ref={div} style={mapStyle} />
-  );
-});
+    if (prevProps.data !== this.props.data) {
+      this.copyData();
+    }
+  }
+
+  styleLines() {
+    this.line.style({
+      strokeColor: this.props.edgeColor,
+    }).draw();
+  }
+
+  styleNodes() {
+    this.marker.style({
+      fillColor: (d: any) => d.fixed ? "blue" : this.props.nodeColor,
+    }).draw();
+  }
+
+  copyData() {
+    this.nodes = structuredClone(this.props.data.nodes);
+    this.edges = structuredClone(this.props.data.edges);
+
+    this.sim.nodes(this.nodes)
+        .force("link", forceLink(this.edges).distance(10))
+        .restart();
+  }
+
+  zoomToFit() {
+    const bounds = this.marker.data().reduce((acc: Bounds, d: Node) => ({
+      left: Math.min(d.x, acc.left),
+      right: Math.max(d.x, acc.right),
+      bottom: Math.min(d.y, acc.bottom),
+      top: Math.max(d.y, acc.top),
+    }), {left: Infinity, right: -Infinity, bottom: Infinity, top: -Infinity});
+
+    /// @ts-ignore
+    const bz = this.map.zoomAndCenterFromBounds(bounds, 0);
+
+    /// @ts-ignore
+    this.map.center(bz.center);
+
+    /// @ts-ignore
+    this.map.zoom(bz.zoom + Math.log2(0.8));
+  }
+
+  async screencap() {
+    /// @ts-ignore
+    return await this.map.screenshot();
+  }
+
+  render() {
+    return (
+      <div ref={this.div} style={mapStyle} />
+    );
+  }
+}
 
 export default Graph;
