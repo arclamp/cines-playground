@@ -28,7 +28,7 @@ class Graph extends Component<GraphProps, never> {
   map: GeojsMap = geo.map({ node: document.createElement("div") });
   line: LineFeature = this.map.createLayer("feature", { features: ["line"] }).createFeature("line");
   marker: MarkerFeature = this.map.createLayer("feature", { features: ["marker"] }).createFeature("marker");
-  labels: any;
+  labels: UiLayer = this.map.createLayer("ui", { zIndex: 0 });
   sim: Simulation<Node, Edge>;
 
   constructor(props: GraphProps) {
@@ -86,7 +86,7 @@ class Graph extends Component<GraphProps, never> {
       });
     this.styleNodes();
 
-    const tooltips: {[index: number]: any} = {};
+    const tooltips: {[index: number]: Widget} = {};
     this.marker.geoOn(geo.event.feature.mouseclick, (evt: GeojsEvent) => {
       const data = evt.data;
       const modifiers = evt.sourceEvent.modifiers;

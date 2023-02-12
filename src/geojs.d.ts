@@ -82,6 +82,21 @@ declare class FeatureLayer {
   createFeature(type: "marker"): MarkerFeature;
 }
 
+declare class UiLayer {
+  createWidget(type: "dom", spec: {
+    position: {
+      x: number;
+      y: number;
+    };
+  }): Widget
+  deleteWidget(widget: Widget)
+}
+
+declare class Widget {
+  canvas(): HTMLDivElement
+  position({ x: number, y: number })
+}
+
 interface LineSpec {
   source: {
     x: number;
