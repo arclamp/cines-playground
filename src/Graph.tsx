@@ -25,9 +25,9 @@ class Graph extends Component<GraphProps, never> {
   div: RefObject<HTMLDivElement>;
   nodes: Node[] = [];
   edges: Edge[] = [];
-  map: GeojsMap = geo.map();
-  line: any;
-  marker: any;
+  map: GeojsMap = geo.map({ node: document.createElement("div") });
+  line: LineFeature = this.map.createLayer("feature", { features: ["line"] }).createFeature("line");
+  marker: MarkerFeature = this.map.createLayer("feature", { features: ["marker"] }).createFeature("marker");
   labels: any;
   sim: Simulation<Node, Edge>;
 
