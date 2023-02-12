@@ -81,7 +81,7 @@ class Graph extends Component<GraphProps, never> {
       .style({
         strokeColor: "black",
         scaleWithZoom: geo.markerFeature.scaleMode.all,
-        radius: (d: any) => Math.sqrt(d.degree),
+        radius: (d: Node) => Math.sqrt(d.degree),
         strokeWidth: 0.05,
       });
     this.styleNodes();
@@ -227,7 +227,7 @@ class Graph extends Component<GraphProps, never> {
 
   styleNodes() {
     this.marker.style({
-      fillColor: (d: any) => d.fixed ? "blue" : this.props.nodeColor,
+      fillColor: (d: Node) => d.fixed ? "blue" : this.props.nodeColor,
     }).draw();
   }
 
