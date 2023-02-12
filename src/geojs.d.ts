@@ -51,6 +51,32 @@ declare class GeojsMap {
   screenshot(): Promise<string>;
 }
 
+interface GeojsEvent {
+  data: import('./util').Node;
+  sourceEvent: {
+    modifiers: {
+      alt: boolean;
+      ctrl: boolean;
+      meta: boolean;
+      shift: boolean;
+    };
+  };
+  mouse: {
+    geo: {
+      x: number;
+      y: number;
+    };
+  };
+  state?: {
+    origin: {
+      geo: {
+        x: number;
+        y: number;
+      };
+    };
+  };
+}
+
 declare class FeatureLayer {
   createFeature(type: "line"): LineFeature;
   createFeature(type: "marker"): MarkerFeature;

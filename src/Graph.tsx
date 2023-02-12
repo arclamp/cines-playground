@@ -87,7 +87,7 @@ class Graph extends Component<GraphProps, never> {
     this.styleNodes();
 
     const tooltips: {[index: number]: any} = {};
-    this.marker.geoOn(geo.event.feature.mouseclick, (evt: any) => {
+    this.marker.geoOn(geo.event.feature.mouseclick, (evt: GeojsEvent) => {
       const data = evt.data;
       const modifiers = evt.sourceEvent.modifiers;
 
@@ -125,7 +125,8 @@ class Graph extends Component<GraphProps, never> {
 
     let node: Node | null = null;
     let startPos = { x: 0, y: 0 };
-    this.marker.geoOn(geo.event.feature.mouseon, (evt: any) => {
+    this.marker.geoOn(geo.event.feature.mouseon, (evt: GeojsEvent) => {
+      console.log(evt);
       node = evt.data;
       if (!node) {
         throw new Error("mouseon failed");
@@ -141,8 +142,8 @@ class Graph extends Component<GraphProps, never> {
         owner: "me",
         input: "left",
       });
-    }).geoOn(geo.event.actionmove, (evt: any) => {
-      if (!node) {
+    }).geoOn(geo.event.actionmove, (evt: GeojsEvent) => {
+      if (!node || !evt.state) {
         throw new Error("mouseon failed");
       }
 
@@ -164,7 +165,7 @@ class Graph extends Component<GraphProps, never> {
       this.line.draw();
 
       this.sim.alpha(0.3).restart();
-    }).geoOn(geo.event.actionup, (evt: any) => {
+    }).geoOn(geo.event.actionup, (evt: GeojsEvent) => {
       if (!node) {
         throw new Error("mouseon failed");
       }
