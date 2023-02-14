@@ -26,8 +26,8 @@ class Graph extends Component<GraphProps, never> {
   nodes: Node[] = [];
   edges: Edge[] = [];
   map: GeojsMap = geo.map({ node: document.createElement("div") });
-  line: LineFeature = this.map.createLayer("feature", { features: ["line"] }).createFeature("line");
-  marker: MarkerFeature = this.map.createLayer("feature", { features: ["marker"] }).createFeature("marker");
+  line: LineFeature<Edge> = this.map.createLayer("feature", { features: ["line"] }).createFeature("line");
+  marker: MarkerFeature<Node> = this.map.createLayer("feature", { features: ["marker"] }).createFeature("marker");
   labels: UiLayer = this.map.createLayer("ui", { zIndex: 0 });
   sim: Simulation<Node, Edge>;
 
@@ -87,7 +87,7 @@ class Graph extends Component<GraphProps, never> {
     this.styleNodes();
 
     const tooltips: {[index: number]: Widget} = {};
-    this.marker.geoOn(geo.event.feature.mouseclick, (evt: GeojsEvent) => {
+    this.marker.geoOn(geo.event.feature.mouseclick, (evt: GeojsEvent<Node>) => {
       const data = evt.data;
       const modifiers = evt.sourceEvent.modifiers;
 
@@ -125,7 +125,7 @@ class Graph extends Component<GraphProps, never> {
 
     let node: Node | null = null;
     let startPos = { x: 0, y: 0 };
-    this.marker.geoOn(geo.event.feature.mouseon, (evt: GeojsEvent) => {
+    this.marker.geoOn(geo.event.feature.mouseon, (evt: GeojsEvent<Node>) => {
       console.log(evt);
       node = evt.data;
       if (!node) {
@@ -142,7 +142,7 @@ class Graph extends Component<GraphProps, never> {
         owner: "me",
         input: "left",
       });
-    }).geoOn(geo.event.actionmove, (evt: GeojsEvent) => {
+    }).geoOn(geo.event.actionmove, (evt: GeojsEvent<Node>) => {
       if (!node || !evt.state) {
         throw new Error("mouseon failed");
       }
@@ -165,7 +165,7 @@ class Graph extends Component<GraphProps, never> {
       this.line.draw();
 
       this.sim.alpha(0.3).restart();
-    }).geoOn(geo.event.actionup, (evt: GeojsEvent) => {
+    }).geoOn(geo.event.actionup, (evt: GeojsEvent<Node>) => {
       if (!node) {
         throw new Error("mouseon failed");
       }

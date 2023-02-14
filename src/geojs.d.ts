@@ -40,7 +40,7 @@ interface ZoomAndCenter {
   };
 }
 
-declare class GeojsMap {
+class GeojsMap {
   createLayer(type: "feature", options: FeatureLayerOptions): FeatureLayer;
   createLayer(type: "ui", options: UiLayerOptions): UiLayer;
   layers(): UiLayer[];
@@ -51,8 +51,8 @@ declare class GeojsMap {
   screenshot(): Promise<string>;
 }
 
-interface GeojsEvent {
-  data: import('./util').Node;
+interface GeojsEvent<T> {
+  data: T;
   sourceEvent: {
     modifiers: {
       alt: boolean;
@@ -113,10 +113,10 @@ interface LineStyleSpec {
   strokeWidth?: number;
 }
 
-declare class LineFeature {
+declare class LineFeature<T> {
   line(fn: (item: LineSpec) => [[number, number], [number, number]])
   style(spec: LineStyleSpec)
-  data(data: any[])
+  data(data: T[])
   draw()
   dataTime()
 }
@@ -129,9 +129,9 @@ interface MarkerStyleSpec {
     strokeWidth?: number;
 }
 
-declare class MarkerFeature {
+declare class MarkerFeature<T> {
   style(spec: MarkerStyleSpec)
-  data(data?: any[])
+  data(data?: T[])
   geoOn(eventType: string, cb: (evt: any) => void)
   dataTime()
   modified()
