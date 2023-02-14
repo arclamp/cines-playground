@@ -2,6 +2,7 @@ import { Component, createRef, RefObject } from 'react';
 import geo from 'geojs';
 import { forceSimulation, forceCenter, forceManyBody, forceCollide, forceLink, Simulation } from 'd3-force';
 import { GraphData, Node, Edge } from './util';
+import { cytoscapeLayout, isLayout } from './layout';
 
 import type { NodeDatum } from './util';
 import type { SimulationNodeDatum } from 'd3-force';
@@ -216,6 +217,24 @@ class Graph extends Component<GraphProps, never> {
 
     if (prevProps.data !== this.props.data) {
       this.copyData();
+    }
+
+    if (prevProps.layout !== this.props.layout) {
+      const layout = this.props.layout;
+
+      if (isLayout(layout)) {
+        this.sim.stop();
+
+        const positions = cytoscapeLayout(this.nodes, layout);
+        console.log(positions);
+        for (const key in positions) {
+          this.nodes[key].x = positions[key].x;
+          this.nodes[key].y = positions[key].y;
+        }
+       }
+
+       this.marker.data(this.nodes).draw();
+       this.line.data(this.edges).draw();
     }
   }
 

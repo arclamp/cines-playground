@@ -91,7 +91,7 @@ function App() {
           <ToolbarMenu
             header="Layout"
             description="Select a layout"
-            options={["force", "circle", "kaluza-klein manifold"]}
+            options={["force", "circle", "grid", "null"]}
             setExternalState={setLayout}
           />
         </Toolbar>
