@@ -13,13 +13,6 @@ interface GraphProps {
   layout: string;
 };
 
-interface Bounds {
-  left: number;
-  right: number;
-  bottom: number;
-  top: number;
-}
-
 const mapStyle = {
   width: "100%",
   height: "calc(100vh - 64px)",
@@ -31,11 +24,11 @@ const mapStyle = {
 class Graph extends Component<GraphProps, never> {
   div: RefObject<HTMLDivElement>;
   nodes: Node[] = [];
-  edges: any;
-  map: GeojsMap = geo.map();
-  line: any;
-  marker: any;
-  labels: any;
+  edges: Edge[] = [];
+  map: GeojsMap = geo.map({ node: document.createElement("div") });
+  line: LineFeature<Edge> = this.map.createLayer("feature", { features: ["line"] }).createFeature("line");
+  marker: MarkerFeature<Node> = this.map.createLayer("feature", { features: ["marker"] }).createFeature("marker");
+  labels: UiLayer = this.map.createLayer("ui", { zIndex: 0 });
   sim: Simulation<Node, Edge>;
 
   constructor(props: GraphProps) {
@@ -88,13 +81,13 @@ class Graph extends Component<GraphProps, never> {
       .style({
         strokeColor: "black",
         scaleWithZoom: geo.markerFeature.scaleMode.all,
-        radius: (d: any) => Math.sqrt(d.degree),
+        radius: (d: Node) => Math.sqrt(d.degree),
         strokeWidth: 0.05,
       });
     this.styleNodes();
 
-    const tooltips: {[index: number]: any} = {};
-    this.marker.geoOn(geo.event.feature.mouseclick, (evt: any) => {
+    const tooltips: {[index: number]: Widget} = {};
+    this.marker.geoOn(geo.event.feature.mouseclick, (evt: GeojsEvent<Node>) => {
       const data = evt.data;
       const modifiers = evt.sourceEvent.modifiers;
 
@@ -132,7 +125,8 @@ class Graph extends Component<GraphProps, never> {
 
     let node: Node | null = null;
     let startPos = { x: 0, y: 0 };
-    this.marker.geoOn(geo.event.feature.mouseon, (evt: any) => {
+    this.marker.geoOn(geo.event.feature.mouseon, (evt: GeojsEvent<Node>) => {
+      console.log(evt);
       node = evt.data;
       if (!node) {
         throw new Error("mouseon failed");
@@ -148,8 +142,8 @@ class Graph extends Component<GraphProps, never> {
         owner: "me",
         input: "left",
       });
-    }).geoOn(geo.event.actionmove, (evt: any) => {
-      if (!node) {
+    }).geoOn(geo.event.actionmove, (evt: GeojsEvent<Node>) => {
+      if (!node || !evt.state) {
         throw new Error("mouseon failed");
       }
 
@@ -171,7 +165,7 @@ class Graph extends Component<GraphProps, never> {
       this.line.draw();
 
       this.sim.alpha(0.3).restart();
-    }).geoOn(geo.event.actionup, (evt: any) => {
+    }).geoOn(geo.event.actionup, (evt: GeojsEvent<Node>) => {
       if (!node) {
         throw new Error("mouseon failed");
       }
@@ -233,7 +227,7 @@ class Graph extends Component<GraphProps, never> {
 
   styleNodes() {
     this.marker.style({
-      fillColor: (d: any) => d.fixed ? "blue" : this.props.nodeColor,
+      fillColor: (d: Node) => d.fixed ? "blue" : this.props.nodeColor,
     }).draw();
   }
 
@@ -254,18 +248,12 @@ class Graph extends Component<GraphProps, never> {
       top: Math.max(d.y, acc.top),
     }), {left: Infinity, right: -Infinity, bottom: Infinity, top: -Infinity});
 
-    /// @ts-ignore
     const bz = this.map.zoomAndCenterFromBounds(bounds, 0);
-
-    /// @ts-ignore
     this.map.center(bz.center);
-
-    /// @ts-ignore
     this.map.zoom(bz.zoom + Math.log2(0.8));
   }
 
   async screencap() {
-    /// @ts-ignore
     return await this.map.screenshot();
   }
 
