@@ -44,11 +44,21 @@ class GeojsMap {
   createLayer(type: "feature", options: FeatureLayerOptions): FeatureLayer;
   createLayer(type: "ui", options: UiLayerOptions): UiLayer;
   layers(): UiLayer[];
-  interactor(): any;
+  interactor(): GeojsMapInteractor;
   zoomAndCenterFromBounds(bounds: Bounds, rotation: number);
   center({ x: number, y: number });
   zoom(zoom: number);
   screenshot(): Promise<string>;
+}
+
+class GeojsMapInteractor {
+  addAction({
+    action: string,
+    name: string,
+    owner: string,
+    input: string,
+  });
+  removeAction(action: string | undefined, name: string | undefined, owner: string);
 }
 
 interface GeojsEvent<T> {
@@ -121,18 +131,18 @@ declare class LineFeature<T> {
   dataTime()
 }
 
-interface MarkerStyleSpec {
+interface MarkerStyleSpec<T> {
     strokeColor?: string;
-    fillColor?: (item: any) => string;
+    fillColor?: (item: T) => string;
     scaleWithZoom?: 0 | 1 | 2 | 3;
-    radius?: number | ((item: any) => number);
+    radius?: number | ((item: T) => number);
     strokeWidth?: number;
 }
 
 declare class MarkerFeature<T> {
-  style(spec: MarkerStyleSpec)
+  style(spec: MarkerStyleSpec<T>)
   data(data?: T[])
-  geoOn(eventType: string, cb: (evt: any) => void)
+  geoOn(eventType: string, cb: (evt: GeojsEvent<T>) => void)
   dataTime()
   modified()
   draw()
