@@ -192,15 +192,7 @@ class Graph extends Component<GraphProps, never> {
         this.marker.data(this.nodes).draw();
         this.line.data(this.edges).draw();
 
-        this.marker.data().forEach((d: Node) => {
-          if (this.tooltips.hasOwnProperty(d.id)) {
-            const tt = this.tooltips[d.id];
-            tt.position({
-              x: d.x,
-              y: d.y,
-            });
-          }
-        });
+        this.updateTooltipPositions();
       });
 
     this.copyData();
@@ -235,15 +227,7 @@ class Graph extends Component<GraphProps, never> {
        this.marker.data(this.nodes).draw();
        this.line.data(this.edges).draw();
 
-       this.marker.data().forEach((d: Node) => {
-         if (this.tooltips.hasOwnProperty(d.id)) {
-           const tt = this.tooltips[d.id];
-           tt.position({
-             x: d.x,
-             y: d.y,
-           });
-         }
-       });
+       this.updateTooltipPositions();
     }
   }
 
@@ -283,6 +267,18 @@ class Graph extends Component<GraphProps, never> {
 
   async screencap() {
     return await this.map.screenshot();
+  }
+
+  updateTooltipPositions() {
+    this.marker.data().forEach((d: Node) => {
+      if (this.tooltips.hasOwnProperty(d.id)) {
+        const tt = this.tooltips[d.id];
+        tt.position({
+          x: d.x,
+          y: d.y,
+        });
+      }
+    });
   }
 
   render() {
