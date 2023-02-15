@@ -127,7 +127,6 @@ class Graph extends Component<GraphProps, never> {
     let node: Node | null = null;
     let startPos = { x: 0, y: 0 };
     this.marker.geoOn(geo.event.feature.mouseon, (evt: GeojsEvent<Node>) => {
-      console.log(evt);
       node = evt.data;
       if (!node) {
         throw new Error("mouseon failed");
@@ -228,10 +227,10 @@ class Graph extends Component<GraphProps, never> {
         this.startSimulation();
       }
 
-       this.marker.data(this.nodes).draw();
-       this.line.data(this.edges).draw();
+      this.marker.data(this.nodes).draw();
+      this.line.data(this.edges).draw();
 
-       this.updateTooltipPositions();
+      this.updateTooltipPositions();
     }
   }
 
