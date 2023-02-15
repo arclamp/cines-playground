@@ -1,8 +1,9 @@
 import cy from "cytoscape";
 
 import type { Node } from './util';
+import type { LayoutOptions } from 'cytoscape';
 
-const layouts = ["null", "grid", "circle"] as const;
+export const layouts = ["random", "grid", "circle", "concentric", "breadthfirst", "cose"] as const;
 type Layout = typeof layouts[number];
 
 interface Position {
@@ -24,7 +25,7 @@ export function isLayout(s: string): s is Layout {
   return (layouts as readonly string[]).includes(s);
 }
 
-export function cytoscapeLayout(nodes: Node[], layout: "null" | "grid" | "circle") {
+export function cytoscapeLayout(nodes: Node[], layout: Layout) {
   // Run a cytoscape layout.
   const c = cy({
     elements: nodes.map((n) => ({
