@@ -29,6 +29,7 @@ class Graph extends Component<GraphProps, never> {
   map: GeojsMap = geo.map({ node: document.createElement("div") });
   line: LineFeature<Edge> = this.map.createLayer("feature", { features: ["line"] }).createFeature("line");
   marker: MarkerFeature<Node> = this.map.createLayer("feature", { features: ["marker"] }).createFeature("marker");
+  tooltips: {[index: number]: Widget} = {};
   labels: UiLayer = this.map.createLayer("ui", { zIndex: 0 });
   sim: Simulation<Node, Edge>;
 
@@ -87,7 +88,6 @@ class Graph extends Component<GraphProps, never> {
       });
     this.styleNodes();
 
-    const tooltips: {[index: number]: Widget} = {};
     this.marker.geoOn(geo.event.feature.mouseclick, (evt: GeojsEvent<Node>) => {
       const data = evt.data;
       const modifiers = evt.sourceEvent.modifiers;
@@ -107,18 +107,18 @@ class Graph extends Component<GraphProps, never> {
             .restart();
       } else {
         // Toggle the display of the node label.
-        if (tooltips.hasOwnProperty(data.id)) {
-          this.labels.deleteWidget(tooltips[data.id]);
-          delete tooltips[data.id]
+        if (this.tooltips.hasOwnProperty(data.id)) {
+          this.labels.deleteWidget(this.tooltips[data.id]);
+          delete this.tooltips[data.id]
         } else {
-          tooltips[data.id] = this.labels.createWidget("dom", {
+          this.tooltips[data.id] = this.labels.createWidget("dom", {
             position: {
               x: data.x,
               y: data.y,
             },
           });
 
-          const tt = tooltips[data.id].canvas();
+          const tt = this.tooltips[data.id].canvas();
           tt.textContent = `${data.id}${data.fixed ? " (fixed)": ""}: degree: ${data.degree}`;
         }
       }
@@ -151,8 +151,8 @@ class Graph extends Component<GraphProps, never> {
       node.fx = startPos.x + evt.mouse.geo.x - evt.state.origin.geo.x;
       node.fy = startPos.y + evt.mouse.geo.y - evt.state.origin.geo.y;
 
-      if (tooltips.hasOwnProperty(node.id)) {
-        const tt = tooltips[node.id];
+      if (this.tooltips.hasOwnProperty(node.id)) {
+        const tt = this.tooltips[node.id];
         tt.position({
           x: node.fx,
           y: node.fy,
@@ -193,8 +193,8 @@ class Graph extends Component<GraphProps, never> {
         this.line.data(this.edges).draw();
 
         this.marker.data().forEach((d: Node) => {
-          if (tooltips.hasOwnProperty(d.id)) {
-            const tt = tooltips[d.id];
+          if (this.tooltips.hasOwnProperty(d.id)) {
+            const tt = this.tooltips[d.id];
             tt.position({
               x: d.x,
               y: d.y,
@@ -226,7 +226,6 @@ class Graph extends Component<GraphProps, never> {
         this.sim.stop();
 
         const positions = cytoscapeLayout(this.nodes, layout);
-        console.log(positions);
         for (const key in positions) {
           this.nodes[key].x = positions[key].x;
           this.nodes[key].y = positions[key].y;
@@ -235,6 +234,16 @@ class Graph extends Component<GraphProps, never> {
 
        this.marker.data(this.nodes).draw();
        this.line.data(this.edges).draw();
+
+       this.marker.data().forEach((d: Node) => {
+         if (this.tooltips.hasOwnProperty(d.id)) {
+           const tt = this.tooltips[d.id];
+           tt.position({
+             x: d.x,
+             y: d.y,
+           });
+         }
+       });
     }
   }
 
