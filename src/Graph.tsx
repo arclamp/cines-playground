@@ -217,7 +217,7 @@ class Graph extends Component<GraphProps, never> {
         this.stopSimulation();
         this.forcesActive = false;
 
-        const positions = cytoscapeLayout(this.nodes, layout);
+        const positions = cytoscapeLayout(this.nodes, this.edges, layout);
         for (const key in positions) {
           this.nodes[key].x = positions[key].x;
           this.nodes[key].y = positions[key].y;

@@ -1,6 +1,6 @@
 import cy from "cytoscape";
 
-import type { Node } from './util';
+import type { Node, Edge } from './util';
 import type { LayoutOptions } from 'cytoscape';
 
 export const layouts = ["random", "grid", "circle", "concentric", "breadthfirst", "cose"] as const;
@@ -25,21 +25,88 @@ export function isLayout(s: string): s is Layout {
   return (layouts as readonly string[]).includes(s);
 }
 
-export function cytoscapeLayout(nodes: Node[], layout: Layout) {
+export function cytoscapeLayout(nodes: Node[], edges: Edge[], layout: Layout) {
   // Run a cytoscape layout.
   const c = cy({
-    elements: nodes.map((n) => ({
-      group: "nodes",
-      data: {
-        id: `${n.id}`,
-      },
-    })),
+    elements: {
+      nodes: nodes.map((n) => ({
+        data: {
+          id: `${n.id}`,
+        },
+      })),
+      edges: edges.map((e, i) => ({
+        data: {
+          id: `e${i}`,
+          source: `${typeof e.source === "number" ? e.source : e.source.id}`,
+          target: `${typeof e.target === "number" ? e.target : e.target.id}`,
+        },
+      })),
+    },
   });
 
-  const l = c.layout({
+  let opts: LayoutOptions = {
     name: layout,
-  });
-  l.run();
+  };
+  switch (layout) {
+    case "random": {
+      opts = {
+        name: "random",
+        boundingBox: {
+          x1: -80,
+          x2: 80,
+          y1: -80,
+          y2: 80,
+        },
+      };
+      break;
+    }
+
+    case "circle": {
+      opts = {
+        name: "circle",
+        radius: 80,
+      };
+      break;
+    }
+
+    case "concentric": {
+      opts = {
+        name: "concentric",
+        concentric: (node) => {
+          const level = Math.floor(Math.random() * 3);
+          console.log(level);
+          return level;
+        },
+        levelWidth: (nodes) => 1,
+      };
+      break;
+    }
+
+    case "breadthfirst": {
+      opts = {
+        name: "breadthfirst",
+        roots: ["0"],
+        spacingFactor: 4,
+      };
+      break;
+    }
+
+    case "cose": {
+      opts = {
+        name: "cose",
+        boundingBox: {
+          x1: -80,
+          x2: 80,
+          y1: -80,
+          y2: 80,
+        },
+        animate: false,
+      };
+      break;
+    }
+  }
+
+  c.layout(opts).run();
 
   // Pull the laid-out positions out into an array. (Even though the cytoscape
   // docs claim that the nodes collection can be subjected to iteration, etc.,
