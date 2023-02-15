@@ -32,6 +32,7 @@ class Graph extends Component<GraphProps, never> {
   tooltips: {[index: number]: Widget} = {};
   labels: UiLayer = this.map.createLayer("ui", { zIndex: 0 });
   sim: Simulation<Node, Edge>;
+  forcesActive: boolean = true;
 
   constructor(props: GraphProps) {
     super(props);
@@ -103,8 +104,7 @@ class Graph extends Component<GraphProps, never> {
         }
 
         // Kick the simulation.
-        this.sim.alpha(0.3)
-            .restart();
+        this.startSimulation();
       } else {
         // Toggle the display of the node label.
         if (this.tooltips.hasOwnProperty(data.id)) {
@@ -165,7 +165,7 @@ class Graph extends Component<GraphProps, never> {
       this.line.dataTime().modified();
       this.line.draw();
 
-      this.sim.alpha(0.3).restart();
+      this.startSimulation();
     }).geoOn(geo.event.actionup, (evt: GeojsEvent<Node>) => {
       if (!node) {
         throw new Error("mouseon failed");
@@ -215,14 +215,18 @@ class Graph extends Component<GraphProps, never> {
       const layout = this.props.layout;
 
       if (isLayout(layout)) {
-        this.sim.stop();
+        this.stopSimulation();
+        this.forcesActive = false;
 
         const positions = cytoscapeLayout(this.nodes, layout);
         for (const key in positions) {
           this.nodes[key].x = positions[key].x;
           this.nodes[key].y = positions[key].y;
         }
-       }
+      } else {
+        this.forcesActive = true;
+        this.startSimulation();
+      }
 
        this.marker.data(this.nodes).draw();
        this.line.data(this.edges).draw();
@@ -249,7 +253,7 @@ class Graph extends Component<GraphProps, never> {
 
     this.sim.nodes(this.nodes)
         .force("link", forceLink(this.edges).distance(10))
-        .restart();
+    this.startSimulation();
   }
 
   zoomToFit() {
@@ -279,6 +283,18 @@ class Graph extends Component<GraphProps, never> {
         });
       }
     });
+  }
+
+  startSimulation() {
+    if (this.forcesActive) {
+      this.sim.alpha(0.3).restart();
+    }
+  }
+
+  stopSimulation() {
+    if (this.forcesActive) {
+      this.sim.stop();
+    }
   }
 
   render() {
