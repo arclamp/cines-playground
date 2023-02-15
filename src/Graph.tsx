@@ -150,7 +150,7 @@ class Graph extends Component<GraphProps, never> {
       node.fx = startPos.x + evt.mouse.geo.x - evt.state.origin.geo.x;
       node.fy = startPos.y + evt.mouse.geo.y - evt.state.origin.geo.y;
 
-      if (this.tooltips.hasOwnProperty(node.id)) {
+      if (this.forcesActive && this.tooltips.hasOwnProperty(node.id)) {
         const tt = this.tooltips[node.id];
         tt.position({
           x: node.fx,
