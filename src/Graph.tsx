@@ -195,6 +195,8 @@ class Graph extends Component<GraphProps, never> {
       });
 
     this.copyData();
+
+    this.applyLayout();
   }
 
   componentDidUpdate(prevProps: GraphProps) {
@@ -211,10 +213,29 @@ class Graph extends Component<GraphProps, never> {
     }
 
     if (prevProps.layout !== this.props.layout) {
+      this.applyLayout();
+    }
+  }
+
+  styleLines() {
+    this.line.style({
+      strokeColor: this.props.edgeColor,
+    }).draw();
+  }
+
+  styleNodes() {
+    this.marker.style({
+      fillColor: (d: Node) => d.fixed ? "blue" : this.props.nodeColor,
+    }).draw();
+  }
+
+  applyLayout() {
       const layout = this.props.layout;
 
       if (isLayout(layout)) {
-        this.stopSimulation();
+        this.stopSimulation({
+          force: true,
+        });
         this.forcesActive = false;
 
         const positions = cytoscapeLayout(this.nodes, this.edges, layout);
@@ -231,19 +252,6 @@ class Graph extends Component<GraphProps, never> {
       this.line.data(this.edges).draw();
 
       this.updateTooltipPositions();
-    }
-  }
-
-  styleLines() {
-    this.line.style({
-      strokeColor: this.props.edgeColor,
-    }).draw();
-  }
-
-  styleNodes() {
-    this.marker.style({
-      fillColor: (d: Node) => d.fixed ? "blue" : this.props.nodeColor,
-    }).draw();
   }
 
   copyData() {
@@ -290,8 +298,8 @@ class Graph extends Component<GraphProps, never> {
     }
   }
 
-  stopSimulation() {
-    if (this.forcesActive) {
+  stopSimulation({ force = false }: { force: boolean }) {
+    if (this.forcesActive || force) {
       this.sim.stop();
     }
   }
