@@ -7,7 +7,7 @@ import Toolbar from '@mui/material/Toolbar';
 import ToolbarMenu from './ToolbarMenu';
 import Typography from '@mui/material/Typography';
 import { fetchNetworkData, getNetwork } from './util';
-import { layouts } from './layout';
+import { cytoscapeLayouts } from './layout';
 import './App.css';
 
 import type { GraphData } from './types';
@@ -94,7 +94,7 @@ function App() {
           <ToolbarMenu
             header="Layout"
             description="Select a layout"
-            options={["force", ...layouts]}
+            options={["force", ...cytoscapeLayouts]}
             setExternalState={setLayout}
           />
         </Toolbar>

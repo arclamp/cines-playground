@@ -3,8 +3,8 @@ import cy from "cytoscape";
 import type { GraphNode, GraphEdge } from './types';
 import type { LayoutOptions } from 'cytoscape';
 
-export const layouts = ["random", "grid", "circle", "concentric", "breadthfirst", "cose"] as const;
-type Layout = typeof layouts[number];
+export const cytoscapeLayouts = ["random", "grid", "circle", "concentric", "breadthfirst", "cose"] as const;
+export type CytoscapeLayout = typeof cytoscapeLayouts[number];
 
 export interface NodePosition {
   id: number;
@@ -27,11 +27,11 @@ function pos_mean(data: Position[]): Position {
   };
 }
 
-export function isLayout(s: string): s is Layout {
-  return (layouts as readonly string[]).includes(s);
+export function isCytoscapeLayout(s: string): s is CytoscapeLayout {
+  return (cytoscapeLayouts as readonly string[]).includes(s);
 }
 
-export function cytoscapeLayout(nodes: GraphNode[], edges: GraphEdge[], layout: Layout): NodePosition[] {
+export function cytoscapeLayout(nodes: GraphNode[], edges: GraphEdge[], layout: CytoscapeLayout): NodePosition[] {
   // Run a cytoscape layout.
   const c = cy({
     elements: {
