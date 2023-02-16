@@ -11,7 +11,7 @@ interface GraphProps {
   nodeColor: string;
   edgeColor: string;
   layout: string;
-};
+}
 
 class Graph extends Component<GraphProps, never> {
   div: RefObject<HTMLDivElement> = createRef<HTMLDivElement>();
@@ -23,7 +23,7 @@ class Graph extends Component<GraphProps, never> {
   tooltips: {[index: number]: Widget} = {};
   labels: UiLayer = this.map.createLayer("ui", { zIndex: 0 });
   sim: Simulation<GraphNode, GraphEdge> = forceSimulation();
-  forcesActive: boolean = true;
+  forcesActive = true;
 
   componentDidMount() {
     this.map = geo.map({
@@ -88,7 +88,7 @@ class Graph extends Component<GraphProps, never> {
         this.startSimulation();
       } else {
         // Toggle the display of the node label.
-        if (this.tooltips.hasOwnProperty(data.id)) {
+        if (Object.hasOwn(this.tooltips, data.id)) {
           this.labels.deleteWidget(this.tooltips[data.id]);
           delete this.tooltips[data.id]
         } else {
@@ -131,7 +131,7 @@ class Graph extends Component<GraphProps, never> {
       node.fx = startPos.x + evt.mouse.geo.x - evt.state.origin.geo.x;
       node.fy = startPos.y + evt.mouse.geo.y - evt.state.origin.geo.y;
 
-      if (this.forcesActive && this.tooltips.hasOwnProperty(node.id)) {
+      if (this.forcesActive && Object.hasOwn(this.tooltips, node.id)) {
         const tt = this.tooltips[node.id];
         tt.position({
           x: node.fx,
@@ -159,7 +159,7 @@ class Graph extends Component<GraphProps, never> {
     });
 
     function isGraphNode(d: SimulationNodeDatum): d is GraphNode {
-      return d.hasOwnProperty("degree");
+      return Object.hasOwn(d, "degree");
     }
 
     this.sim = forceSimulation([] as GraphNode[])
@@ -267,7 +267,7 @@ class Graph extends Component<GraphProps, never> {
 
   updateTooltipPositions() {
     this.marker.data().forEach((d: GraphNode) => {
-      if (this.tooltips.hasOwnProperty(d.id)) {
+      if (Object.hasOwn(this.tooltips, d.id)) {
         const tt = this.tooltips[d.id];
         tt.position({
           x: d.x,

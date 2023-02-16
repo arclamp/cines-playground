@@ -110,7 +110,7 @@ export function cytoscapeLayout(nodes: GraphNode[], edges: GraphEdge[], layout: 
   // docs claim that the nodes collection can be subjected to iteration, etc.,
   // the published types don't actually allow it, so we have to jump through
   // this hoop).
-  let cy_pos: { id: string, x: number, y: number }[] = [];
+  const cy_pos: { id: string, x: number, y: number }[] = [];
   for (let i=0; i < c.nodes().length; i += 1) {
     const n = c.nodes()[i];
     const p = n.position();
