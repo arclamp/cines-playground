@@ -73,9 +73,7 @@ export function cytoscapeLayout(nodes: Node[], edges: Edge[], layout: Layout) {
       opts = {
         name: "concentric",
         concentric: (node) => {
-          const level = Math.floor(Math.random() * 3);
-          console.log(level);
-          return level;
+          return Math.floor(Math.random() * 3);
         },
         levelWidth: (nodes) => 1,
       };
