@@ -14,7 +14,7 @@ interface GraphProps {
 };
 
 class Graph extends Component<GraphProps, never> {
-  div: RefObject<HTMLDivElement>;
+  div: RefObject<HTMLDivElement> = createRef<HTMLDivElement>();
   nodes: GraphNode[] = [];
   edges: GraphEdge[] = [];
   map: GeojsMap = geo.map({ node: document.createElement("div") });
@@ -22,14 +22,8 @@ class Graph extends Component<GraphProps, never> {
   marker: MarkerFeature<GraphNode> = this.map.createLayer("feature", { features: ["marker"] }).createFeature("marker");
   tooltips: {[index: number]: Widget} = {};
   labels: UiLayer = this.map.createLayer("ui", { zIndex: 0 });
-  sim: Simulation<GraphNode, GraphEdge>;
+  sim: Simulation<GraphNode, GraphEdge> = forceSimulation();
   forcesActive: boolean = true;
-
-  constructor(props: GraphProps) {
-    super(props);
-    this.div = createRef<HTMLDivElement>();
-    this.sim = forceSimulation();
-  }
 
   componentDidMount() {
     if (!this.div) {
