@@ -6,6 +6,12 @@ import type { LayoutOptions } from 'cytoscape';
 export const layouts = ["random", "grid", "circle", "concentric", "breadthfirst", "cose"] as const;
 type Layout = typeof layouts[number];
 
+export interface NodePosition {
+  id: number;
+  x: number;
+  y: number;
+}
+
 interface Position {
   x: number;
   y: number;
@@ -25,7 +31,7 @@ export function isLayout(s: string): s is Layout {
   return (layouts as readonly string[]).includes(s);
 }
 
-export function cytoscapeLayout(nodes: Node[], edges: Edge[], layout: Layout) {
+export function cytoscapeLayout(nodes: Node[], edges: Edge[], layout: Layout): NodePosition[] {
   // Run a cytoscape layout.
   const c = cy({
     elements: {
@@ -126,12 +132,9 @@ export function cytoscapeLayout(nodes: Node[], edges: Edge[], layout: Layout) {
   const cy_mean = pos_mean(cy_pos);
 
   // Transcribe the laid-out positions, maintaining the original mean position.
-  let map: {[n: number]: {x: number, y: number}} = {};
-  for (const p of cy_pos) {
-    map[+p.id] = {
-      x: p.x - cy_mean.x + node_mean.x,
-      y: p.y - cy_mean.y + node_mean.y,
-    };
-  }
-  return map;
+  return cy_pos.map((p) => ({
+    id: +p.id,
+    x: p.x - cy_mean.x + node_mean.x,
+    y: p.y - cy_mean.y + node_mean.y,
+  }));
 }

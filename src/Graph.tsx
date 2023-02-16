@@ -5,6 +5,7 @@ import { GraphData, Node, Edge } from './util';
 import { cytoscapeLayout, isLayout } from './layout';
 
 import type { NodeDatum } from './util';
+import type { NodePosition } from './layout';
 import type { SimulationNodeDatum } from 'd3-force';
 
 interface GraphProps {
@@ -239,10 +240,7 @@ class Graph extends Component<GraphProps, never> {
         this.forcesActive = false;
 
         const positions = cytoscapeLayout(this.nodes, this.edges, layout);
-        for (const key in positions) {
-          this.nodes[key].x = positions[key].x;
-          this.nodes[key].y = positions[key].y;
-        }
+        this.updateNodePositions(positions);
       } else {
         this.forcesActive = true;
         this.startSimulation();
@@ -261,6 +259,13 @@ class Graph extends Component<GraphProps, never> {
     this.sim.nodes(this.nodes)
         .force("link", forceLink(this.edges).distance(10))
     this.startSimulation();
+  }
+
+  updateNodePositions(positions: readonly NodePosition[]) {
+    for (const p of positions) {
+      this.nodes[p.id].x = p.x;
+      this.nodes[p.id].y = p.y;
+    }
   }
 
   zoomToFit() {
