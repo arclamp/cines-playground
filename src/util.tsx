@@ -1,27 +1,4 @@
-interface GraphNode {
-  id: number;
-  degree: number;
-  fixed: boolean;
-
-  x: number;
-  y: number;
-  fx: number | null;
-  fy: number | null;
-}
-
-interface GraphEdge {
-  source: number | GraphNode;
-  target: number | GraphNode;
-}
-
-type NodeTable = {
-  [key: number]: GraphNode;
-}
-
-interface GraphData {
-  nodes: GraphNode[];
-  edges: GraphEdge[];
-}
+import type { GraphNode, GraphEdge, GraphData } from './types';
 
 async function fetchNetworkData(filename: string): Promise<string> {
   const resp = await fetch(`/data/${filename}`);
@@ -29,7 +6,7 @@ async function fetchNetworkData(filename: string): Promise<string> {
 }
 
 function getNetwork(text: string): GraphData {
-  let nodes: NodeTable = {};
+  let nodes: { [key: number]: GraphNode } = {};
   let edges: GraphEdge[] = [];
 
   const addNode = (id: number): void => {
@@ -72,5 +49,4 @@ function getNetwork(text: string): GraphData {
   }
 }
 
-export type { GraphData, GraphNode, GraphEdge };
 export { fetchNetworkData, getNetwork };

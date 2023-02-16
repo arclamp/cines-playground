@@ -6,9 +6,11 @@ import Graph from './Graph';
 import Toolbar from '@mui/material/Toolbar';
 import ToolbarMenu from './ToolbarMenu';
 import Typography from '@mui/material/Typography';
-import { GraphData, fetchNetworkData, getNetwork } from './util';
+import { fetchNetworkData, getNetwork } from './util';
 import { layouts } from './layout';
 import './App.css';
+
+import type { GraphData } from './types';
 
 const emptyGraph = {
   nodes: [],

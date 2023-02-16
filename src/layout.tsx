@@ -1,6 +1,6 @@
 import cy from "cytoscape";
 
-import type { GraphNode, GraphEdge } from './util';
+import type { GraphNode, GraphEdge } from './types';
 import type { LayoutOptions } from 'cytoscape';
 
 export const layouts = ["random", "grid", "circle", "concentric", "breadthfirst", "cose"] as const;
