@@ -26,10 +26,6 @@ class Graph extends Component<GraphProps, never> {
   forcesActive: boolean = true;
 
   componentDidMount() {
-    if (!this.div) {
-      throw new Error("GraphComponent: <div> was not initialized");
-    }
-
     this.map = geo.map({
       node: this.div.current,
       center: {x: 0, y: 0},
