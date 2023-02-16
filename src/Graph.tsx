@@ -1,10 +1,9 @@
 import { Component, createRef, RefObject } from 'react';
 import geo from 'geojs';
 import { forceSimulation, forceCenter, forceManyBody, forceCollide, forceLink, Simulation } from 'd3-force';
-import { GraphData, Node, Edge } from './util';
+import { GraphData, GraphNode, GraphEdge } from './util';
 import { cytoscapeLayout, isLayout } from './layout';
 
-import type { NodeDatum } from './util';
 import type { NodePosition } from './layout';
 import type { SimulationNodeDatum } from 'd3-force';
 
@@ -25,14 +24,14 @@ const mapStyle = {
 
 class Graph extends Component<GraphProps, never> {
   div: RefObject<HTMLDivElement>;
-  nodes: Node[] = [];
-  edges: Edge[] = [];
+  nodes: GraphNode[] = [];
+  edges: GraphEdge[] = [];
   map: GeojsMap = geo.map({ node: document.createElement("div") });
-  line: LineFeature<Edge> = this.map.createLayer("feature", { features: ["line"] }).createFeature("line");
-  marker: MarkerFeature<Node> = this.map.createLayer("feature", { features: ["marker"] }).createFeature("marker");
+  line: LineFeature<GraphEdge> = this.map.createLayer("feature", { features: ["line"] }).createFeature("line");
+  marker: MarkerFeature<GraphNode> = this.map.createLayer("feature", { features: ["marker"] }).createFeature("marker");
   tooltips: {[index: number]: Widget} = {};
   labels: UiLayer = this.map.createLayer("ui", { zIndex: 0 });
-  sim: Simulation<Node, Edge>;
+  sim: Simulation<GraphNode, GraphEdge>;
   forcesActive: boolean = true;
 
   constructor(props: GraphProps) {
@@ -85,12 +84,12 @@ class Graph extends Component<GraphProps, never> {
       .style({
         strokeColor: "black",
         scaleWithZoom: geo.markerFeature.scaleMode.all,
-        radius: (d: Node) => Math.sqrt(d.degree),
+        radius: (d: GraphNode) => Math.sqrt(d.degree),
         strokeWidth: 0.05,
       });
     this.styleNodes();
 
-    this.marker.geoOn(geo.event.feature.mouseclick, (evt: GeojsEvent<Node>) => {
+    this.marker.geoOn(geo.event.feature.mouseclick, (evt: GeojsEvent<GraphNode>) => {
       const data = evt.data;
       const modifiers = evt.sourceEvent.modifiers;
 
@@ -125,9 +124,9 @@ class Graph extends Component<GraphProps, never> {
       }
     });
 
-    let node: Node | null = null;
+    let node: GraphNode | null = null;
     let startPos = { x: 0, y: 0 };
-    this.marker.geoOn(geo.event.feature.mouseon, (evt: GeojsEvent<Node>) => {
+    this.marker.geoOn(geo.event.feature.mouseon, (evt: GeojsEvent<GraphNode>) => {
       node = evt.data;
       if (!node) {
         throw new Error("mouseon failed");
@@ -143,7 +142,7 @@ class Graph extends Component<GraphProps, never> {
         owner: "me",
         input: "left",
       });
-    }).geoOn(geo.event.actionmove, (evt: GeojsEvent<Node>) => {
+    }).geoOn(geo.event.actionmove, (evt: GeojsEvent<GraphNode>) => {
       if (!node || !evt.state) {
         throw new Error("mouseon failed");
       }
@@ -166,7 +165,7 @@ class Graph extends Component<GraphProps, never> {
       this.line.draw();
 
       this.startSimulation();
-    }).geoOn(geo.event.actionup, (evt: GeojsEvent<Node>) => {
+    }).geoOn(geo.event.actionup, (evt: GeojsEvent<GraphNode>) => {
       if (!node) {
         throw new Error("mouseon failed");
       }
@@ -178,14 +177,14 @@ class Graph extends Component<GraphProps, never> {
       this.map.interactor().removeAction(undefined, undefined, "me");
     });
 
-    function isNodeDatum(d: SimulationNodeDatum): d is NodeDatum {
+    function isGraphNode(d: SimulationNodeDatum): d is GraphNode {
       return d.hasOwnProperty("degree");
     }
 
-    this.sim = forceSimulation([] as Node[])
+    this.sim = forceSimulation([] as GraphNode[])
       .force("center", forceCenter())
       .force("collide", forceCollide().radius((d: SimulationNodeDatum) => {
-        return isNodeDatum(d) ? Math.sqrt(d.degree) : 10;
+        return isGraphNode(d) ? Math.sqrt(d.degree) : 10;
       }))
       .force("charge", forceManyBody().strength(-2))
       .on("tick", () => {
@@ -226,7 +225,7 @@ class Graph extends Component<GraphProps, never> {
 
   styleNodes() {
     this.marker.style({
-      fillColor: (d: Node) => d.fixed ? "blue" : this.props.nodeColor,
+      fillColor: (d: GraphNode) => d.fixed ? "blue" : this.props.nodeColor,
     }).draw();
   }
 
@@ -269,7 +268,7 @@ class Graph extends Component<GraphProps, never> {
   }
 
   zoomToFit() {
-    const bounds = this.marker.data().reduce((acc: Bounds, d: Node) => ({
+    const bounds = this.marker.data().reduce((acc: Bounds, d: GraphNode) => ({
       left: Math.min(d.x, acc.left),
       right: Math.max(d.x, acc.right),
       bottom: Math.min(d.y, acc.bottom),
@@ -286,7 +285,7 @@ class Graph extends Component<GraphProps, never> {
   }
 
   updateTooltipPositions() {
-    this.marker.data().forEach((d: Node) => {
+    this.marker.data().forEach((d: GraphNode) => {
       if (this.tooltips.hasOwnProperty(d.id)) {
         const tt = this.tooltips[d.id];
         tt.position({

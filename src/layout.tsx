@@ -1,6 +1,6 @@
 import cy from "cytoscape";
 
-import type { Node, Edge } from './util';
+import type { GraphNode, GraphEdge } from './util';
 import type { LayoutOptions } from 'cytoscape';
 
 export const layouts = ["random", "grid", "circle", "concentric", "breadthfirst", "cose"] as const;
@@ -31,7 +31,7 @@ export function isLayout(s: string): s is Layout {
   return (layouts as readonly string[]).includes(s);
 }
 
-export function cytoscapeLayout(nodes: Node[], edges: Edge[], layout: Layout): NodePosition[] {
+export function cytoscapeLayout(nodes: GraphNode[], edges: GraphEdge[], layout: Layout): NodePosition[] {
   // Run a cytoscape layout.
   const c = cy({
     elements: {

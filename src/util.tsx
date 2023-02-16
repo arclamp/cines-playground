@@ -1,31 +1,26 @@
-import type { SimulationNodeDatum } from 'd3-force';
-
-interface Node {
+interface GraphNode {
   id: number;
+  degree: number;
   fixed: boolean;
+
   x: number;
   y: number;
   fx: number | null;
   fy: number | null;
-  degree: number;
 }
 
-interface NodeDatum extends SimulationNodeDatum {
-  degree: number;
+interface GraphEdge {
+  source: number | GraphNode;
+  target: number | GraphNode;
 }
 
 type NodeTable = {
-  [key: number]: Node;
-}
-
-interface Edge {
-  source: number | Node;
-  target: number | Node;
+  [key: number]: GraphNode;
 }
 
 interface GraphData {
-  nodes: Node[];
-  edges: Edge[];
+  nodes: GraphNode[];
+  edges: GraphEdge[];
 }
 
 async function fetchNetworkData(filename: string): Promise<string> {
@@ -35,7 +30,7 @@ async function fetchNetworkData(filename: string): Promise<string> {
 
 function getNetwork(text: string): GraphData {
   let nodes: NodeTable = {};
-  let edges: Edge[] = [];
+  let edges: GraphEdge[] = [];
 
   const addNode = (id: number): void => {
     if (!nodes.hasOwnProperty(id)) {
@@ -77,5 +72,5 @@ function getNetwork(text: string): GraphData {
   }
 }
 
-export type { GraphData, Node, NodeDatum, Edge };
+export type { GraphData, GraphNode, GraphEdge };
 export { fetchNetworkData, getNetwork };
