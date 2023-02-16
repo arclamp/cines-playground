@@ -14,14 +14,6 @@ interface GraphProps {
   layout: string;
 };
 
-const mapStyle = {
-  width: "100%",
-  height: "calc(100vh - 64px)",
-  padding: 0,
-  margin: 0,
-  overflow: "hidden",
-};
-
 class Graph extends Component<GraphProps, never> {
   div: RefObject<HTMLDivElement>;
   nodes: GraphNode[] = [];
@@ -309,6 +301,14 @@ class Graph extends Component<GraphProps, never> {
   }
 
   render() {
+    const mapStyle = {
+      width: "100%",
+      height: "calc(100vh - 64px)",
+      padding: 0,
+      margin: 0,
+      overflow: "hidden",
+    };
+
     return (
       <div ref={this.div} style={mapStyle} />
     );

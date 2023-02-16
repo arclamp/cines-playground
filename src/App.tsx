@@ -12,17 +12,12 @@ import './App.css';
 
 import type { GraphData } from './types';
 
-const emptyGraph = {
-  nodes: [],
-  edges: [],
-};
-
 function App() {
   const [nodeColor, setNodeColor] = useState("");
   const [edgeColor, setEdgeColor] = useState("");
   const [layout, setLayout] = useState("");
   const [graphDataset, setGraphDataset] = useState("");
-  const [graphData, setGraphData] = useState<GraphData>(emptyGraph);
+  const [graphData, setGraphData] = useState<GraphData>({ nodes: [], edges: []});
   const graph = useRef<Graph>(null);
 
   // Process new grqph data when the selection changes.
@@ -32,7 +27,7 @@ function App() {
         const networkData = await fetchNetworkData(graphDataset);
         setGraphData(getNetwork(networkData));
       } else {
-        setGraphData(emptyGraph);
+        setGraphData({ nodes: [], edges: [] });
       }
     };
 
