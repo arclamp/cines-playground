@@ -6,21 +6,18 @@ import Graph from './Graph';
 import Toolbar from '@mui/material/Toolbar';
 import ToolbarMenu from './ToolbarMenu';
 import Typography from '@mui/material/Typography';
-import { GraphData, fetchNetworkData, getNetwork } from './util';
-import { layouts } from './layout';
+import { fetchNetworkData, getNetwork } from './util';
+import { cytoscapeLayouts } from './layout';
 import './App.css';
 
-const emptyGraph = {
-  nodes: [],
-  edges: [],
-};
+import type { GraphData } from './types';
 
 function App() {
   const [nodeColor, setNodeColor] = useState("");
   const [edgeColor, setEdgeColor] = useState("");
   const [layout, setLayout] = useState("");
   const [graphDataset, setGraphDataset] = useState("");
-  const [graphData, setGraphData] = useState<GraphData>(emptyGraph);
+  const [graphData, setGraphData] = useState<GraphData>({ nodes: [], edges: []});
   const graph = useRef<Graph>(null);
 
   // Process new grqph data when the selection changes.
@@ -30,7 +27,7 @@ function App() {
         const networkData = await fetchNetworkData(graphDataset);
         setGraphData(getNetwork(networkData));
       } else {
-        setGraphData(emptyGraph);
+        setGraphData({ nodes: [], edges: [] });
       }
     };
 
@@ -92,7 +89,7 @@ function App() {
           <ToolbarMenu
             header="Layout"
             description="Select a layout"
-            options={["force", ...layouts]}
+            options={["force", ...cytoscapeLayouts]}
             setExternalState={setLayout}
           />
         </Toolbar>
