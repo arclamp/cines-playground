@@ -6,11 +6,11 @@ async function fetchNetworkData(filename: string): Promise<string> {
 }
 
 function getNetwork(text: string): GraphData {
-  let nodes: { [key: number]: GraphNode } = {};
-  let edges: GraphEdge[] = [];
+  const nodes: { [key: number]: GraphNode } = {};
+  const edges: GraphEdge[] = [];
 
   const addNode = (id: number): void => {
-    if (!nodes.hasOwnProperty(id)) {
+    if (!Object.hasOwn(nodes, id)) {
       nodes[id] = {
         id,
         fixed: false,
@@ -25,7 +25,7 @@ function getNetwork(text: string): GraphData {
     nodes[id].degree += 1;
   }
 
-  for (let line of text.split("\n")) {
+  for (const line of text.split("\n")) {
     if (line) {
       const [source, target] = line
         .split(" ")
