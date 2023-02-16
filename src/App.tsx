@@ -7,6 +7,7 @@ import Toolbar from '@mui/material/Toolbar';
 import ToolbarMenu from './ToolbarMenu';
 import Typography from '@mui/material/Typography';
 import { GraphData, fetchNetworkData, getNetwork } from './util';
+import { layouts } from './layout';
 import './App.css';
 
 const emptyGraph = {
@@ -91,7 +92,7 @@ function App() {
           <ToolbarMenu
             header="Layout"
             description="Select a layout"
-            options={["force", "circle", "kaluza-klein manifold"]}
+            options={["force", ...layouts]}
             setExternalState={setLayout}
           />
         </Toolbar>

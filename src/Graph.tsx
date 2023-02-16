@@ -2,8 +2,10 @@ import { Component, createRef, RefObject } from 'react';
 import geo from 'geojs';
 import { forceSimulation, forceCenter, forceManyBody, forceCollide, forceLink, Simulation } from 'd3-force';
 import { GraphData, Node, Edge } from './util';
+import { cytoscapeLayout, isLayout } from './layout';
 
 import type { NodeDatum } from './util';
+import type { NodePosition } from './layout';
 import type { SimulationNodeDatum } from 'd3-force';
 
 interface GraphProps {
@@ -28,8 +30,10 @@ class Graph extends Component<GraphProps, never> {
   map: GeojsMap = geo.map({ node: document.createElement("div") });
   line: LineFeature<Edge> = this.map.createLayer("feature", { features: ["line"] }).createFeature("line");
   marker: MarkerFeature<Node> = this.map.createLayer("feature", { features: ["marker"] }).createFeature("marker");
+  tooltips: {[index: number]: Widget} = {};
   labels: UiLayer = this.map.createLayer("ui", { zIndex: 0 });
   sim: Simulation<Node, Edge>;
+  forcesActive: boolean = true;
 
   constructor(props: GraphProps) {
     super(props);
@@ -86,7 +90,6 @@ class Graph extends Component<GraphProps, never> {
       });
     this.styleNodes();
 
-    const tooltips: {[index: number]: Widget} = {};
     this.marker.geoOn(geo.event.feature.mouseclick, (evt: GeojsEvent<Node>) => {
       const data = evt.data;
       const modifiers = evt.sourceEvent.modifiers;
@@ -102,22 +105,21 @@ class Graph extends Component<GraphProps, never> {
         }
 
         // Kick the simulation.
-        this.sim.alpha(0.3)
-            .restart();
+        this.startSimulation();
       } else {
         // Toggle the display of the node label.
-        if (tooltips.hasOwnProperty(data.id)) {
-          this.labels.deleteWidget(tooltips[data.id]);
-          delete tooltips[data.id]
+        if (this.tooltips.hasOwnProperty(data.id)) {
+          this.labels.deleteWidget(this.tooltips[data.id]);
+          delete this.tooltips[data.id]
         } else {
-          tooltips[data.id] = this.labels.createWidget("dom", {
+          this.tooltips[data.id] = this.labels.createWidget("dom", {
             position: {
               x: data.x,
               y: data.y,
             },
           });
 
-          const tt = tooltips[data.id].canvas();
+          const tt = this.tooltips[data.id].canvas();
           tt.textContent = `${data.id}${data.fixed ? " (fixed)": ""}: degree: ${data.degree}`;
         }
       }
@@ -126,7 +128,6 @@ class Graph extends Component<GraphProps, never> {
     let node: Node | null = null;
     let startPos = { x: 0, y: 0 };
     this.marker.geoOn(geo.event.feature.mouseon, (evt: GeojsEvent<Node>) => {
-      console.log(evt);
       node = evt.data;
       if (!node) {
         throw new Error("mouseon failed");
@@ -150,8 +151,8 @@ class Graph extends Component<GraphProps, never> {
       node.fx = startPos.x + evt.mouse.geo.x - evt.state.origin.geo.x;
       node.fy = startPos.y + evt.mouse.geo.y - evt.state.origin.geo.y;
 
-      if (tooltips.hasOwnProperty(node.id)) {
-        const tt = tooltips[node.id];
+      if (this.forcesActive && this.tooltips.hasOwnProperty(node.id)) {
+        const tt = this.tooltips[node.id];
         tt.position({
           x: node.fx,
           y: node.fy,
@@ -164,7 +165,7 @@ class Graph extends Component<GraphProps, never> {
       this.line.dataTime().modified();
       this.line.draw();
 
-      this.sim.alpha(0.3).restart();
+      this.startSimulation();
     }).geoOn(geo.event.actionup, (evt: GeojsEvent<Node>) => {
       if (!node) {
         throw new Error("mouseon failed");
@@ -191,18 +192,12 @@ class Graph extends Component<GraphProps, never> {
         this.marker.data(this.nodes).draw();
         this.line.data(this.edges).draw();
 
-        this.marker.data().forEach((d: Node) => {
-          if (tooltips.hasOwnProperty(d.id)) {
-            const tt = tooltips[d.id];
-            tt.position({
-              x: d.x,
-              y: d.y,
-            });
-          }
-        });
+        this.updateTooltipPositions();
       });
 
     this.copyData();
+
+    this.applyLayout();
   }
 
   componentDidUpdate(prevProps: GraphProps) {
@@ -216,6 +211,10 @@ class Graph extends Component<GraphProps, never> {
 
     if (prevProps.data !== this.props.data) {
       this.copyData();
+    }
+
+    if (prevProps.layout !== this.props.layout) {
+      this.applyLayout();
     }
   }
 
@@ -231,13 +230,42 @@ class Graph extends Component<GraphProps, never> {
     }).draw();
   }
 
+  applyLayout() {
+      const layout = this.props.layout;
+
+      if (isLayout(layout)) {
+        this.stopSimulation({
+          force: true,
+        });
+        this.forcesActive = false;
+
+        const positions = cytoscapeLayout(this.nodes, this.edges, layout);
+        this.updateNodePositions(positions);
+      } else {
+        this.forcesActive = true;
+        this.startSimulation();
+      }
+
+      this.marker.data(this.nodes).draw();
+      this.line.data(this.edges).draw();
+
+      this.updateTooltipPositions();
+  }
+
   copyData() {
     this.nodes = structuredClone(this.props.data.nodes);
     this.edges = structuredClone(this.props.data.edges);
 
     this.sim.nodes(this.nodes)
         .force("link", forceLink(this.edges).distance(10))
-        .restart();
+    this.startSimulation();
+  }
+
+  updateNodePositions(positions: readonly NodePosition[]) {
+    for (const p of positions) {
+      this.nodes[p.id].x = p.x;
+      this.nodes[p.id].y = p.y;
+    }
   }
 
   zoomToFit() {
@@ -255,6 +283,30 @@ class Graph extends Component<GraphProps, never> {
 
   async screencap() {
     return await this.map.screenshot();
+  }
+
+  updateTooltipPositions() {
+    this.marker.data().forEach((d: Node) => {
+      if (this.tooltips.hasOwnProperty(d.id)) {
+        const tt = this.tooltips[d.id];
+        tt.position({
+          x: d.x,
+          y: d.y,
+        });
+      }
+    });
+  }
+
+  startSimulation() {
+    if (this.forcesActive) {
+      this.sim.alpha(0.3).restart();
+    }
+  }
+
+  stopSimulation({ force = false }: { force: boolean }) {
+    if (this.forcesActive || force) {
+      this.sim.stop();
+    }
   }
 
   render() {
