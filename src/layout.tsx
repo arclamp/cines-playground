@@ -1,16 +1,10 @@
 import cy from "cytoscape";
 
-import type { GraphNode, GraphEdge } from './types';
+import type { GraphNode, GraphEdge, NodePosition } from './types';
 import type { LayoutOptions } from 'cytoscape';
 
 export const cytoscapeLayouts = ["random", "grid", "circle", "concentric", "breadthfirst", "cose"] as const;
 export type CytoscapeLayout = typeof cytoscapeLayouts[number];
-
-export interface NodePosition {
-  id: number;
-  x: number;
-  y: number;
-}
 
 interface Position {
   x: number;

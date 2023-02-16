@@ -19,4 +19,8 @@ export interface GraphData {
   edges: GraphEdge[];
 }
 
-
+export interface NodePosition {
+  id: number;
+  x: number;
+  y: number;
+}

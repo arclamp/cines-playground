@@ -1,10 +1,9 @@
 import { Component, createRef, RefObject } from 'react';
 import geo from 'geojs';
 import { forceSimulation, forceCenter, forceManyBody, forceCollide, forceLink, Simulation } from 'd3-force';
-import { GraphNode, GraphEdge, GraphData } from './types';
+import { GraphNode, GraphEdge, GraphData, NodePosition } from './types';
 import { cytoscapeLayout, isCytoscapeLayout } from './layout';
 
-import type { NodePosition } from './layout';
 import type { SimulationNodeDatum } from 'd3-force';
 
 interface GraphProps {
