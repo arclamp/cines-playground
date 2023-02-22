@@ -70,7 +70,7 @@ function App() {
           <ToolbarMenu
             header="Dataset"
             description="Graph dataset"
-            options={["network.dat"]}
+            options={["network.dat", "dolphins.dat"]}
             setExternalState={setGraphDataset}
           />
 
