@@ -87,21 +87,7 @@ class Graph extends Component<GraphProps, never> {
         // Kick the simulation.
         this.startSimulation();
       } else {
-        // Toggle the display of the node label.
-        if (Object.hasOwn(this.tooltips, data.id)) {
-          this.labels.deleteWidget(this.tooltips[data.id]);
-          delete this.tooltips[data.id]
-        } else {
-          this.tooltips[data.id] = this.labels.createWidget("dom", {
-            position: {
-              x: data.x,
-              y: data.y,
-            },
-          });
-
-          const tt = this.tooltips[data.id].canvas();
-          tt.textContent = `${data.id}${data.fixed ? " (fixed)": ""}: degree: ${data.degree}`;
-        }
+        this.toggleLabel(data);
       }
     });
 
@@ -236,9 +222,13 @@ class Graph extends Component<GraphProps, never> {
     this.nodes = structuredClone(this.props.data.nodes);
     this.edges = structuredClone(this.props.data.edges);
 
+    this.clearLabels();
+
     this.sim.nodes(this.nodes)
         .force("link", forceLink(this.edges).distance(10))
     this.startSimulation();
+
+    this.applyLayout();
   }
 
   updateNodePositions(positions: readonly NodePosition[]) {
@@ -275,6 +265,37 @@ class Graph extends Component<GraphProps, never> {
         });
       }
     });
+  }
+
+  showLabel(node: GraphNode) {
+    this.tooltips[node.id] = this.labels.createWidget("dom", {
+      position: {
+        x: node.x,
+        y: node.y,
+      },
+    });
+
+    const tt = this.tooltips[node.id].canvas();
+    tt.textContent = `${node.id}${node.fixed ? " (fixed)": ""}: degree: ${node.degree}`;
+  }
+
+  hideLabel(id: number) {
+    this.labels.deleteWidget(this.tooltips[id]);
+    delete this.tooltips[id];
+  }
+
+  toggleLabel(node: GraphNode) {
+    if (Object.hasOwn(this.tooltips, node.id)) {
+      this.hideLabel(node.id);
+    } else {
+      this.showLabel(node);
+    }
+  }
+
+  clearLabels() {
+    for (const id in this.tooltips) {
+      this.hideLabel(+id);
+    }
   }
 
   startSimulation() {
