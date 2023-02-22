@@ -222,6 +222,8 @@ class Graph extends Component<GraphProps, never> {
     this.nodes = structuredClone(this.props.data.nodes);
     this.edges = structuredClone(this.props.data.edges);
 
+    this.clearLabels();
+
     this.sim.nodes(this.nodes)
         .force("link", forceLink(this.edges).distance(10))
     this.startSimulation();
@@ -287,6 +289,12 @@ class Graph extends Component<GraphProps, never> {
       this.hideLabel(node.id);
     } else {
       this.showLabel(node);
+    }
+  }
+
+  clearLabels() {
+    for (const id in this.tooltips) {
+      this.hideLabel(+id);
     }
   }
 
