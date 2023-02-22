@@ -277,14 +277,14 @@ class Graph extends Component<GraphProps, never> {
     tt.textContent = `${node.id}${node.fixed ? " (fixed)": ""}: degree: ${node.degree}`;
   }
 
-  hideLabel(node: GraphNode) {
-    this.labels.deleteWidget(this.tooltips[node.id]);
-    delete this.tooltips[node.id]
+  hideLabel(id: number) {
+    this.labels.deleteWidget(this.tooltips[id]);
+    delete this.tooltips[id];
   }
 
   toggleLabel(node: GraphNode) {
     if (Object.hasOwn(this.tooltips, node.id)) {
-      this.hideLabel(node);
+      this.hideLabel(node.id);
     } else {
       this.showLabel(node);
     }
