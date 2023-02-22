@@ -239,6 +239,8 @@ class Graph extends Component<GraphProps, never> {
     this.sim.nodes(this.nodes)
         .force("link", forceLink(this.edges).distance(10))
     this.startSimulation();
+
+    this.applyLayout();
   }
 
   updateNodePositions(positions: readonly NodePosition[]) {
