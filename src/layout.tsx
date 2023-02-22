@@ -106,10 +106,11 @@ export function cytoscapeLayout(nodes: GraphNode[], edges: GraphEdge[], layout: 
 
   c.layout(opts).run();
 
-  // Pull the laid-out positions out into an array. (Even though the cytoscape
-  // docs claim that the nodes collection can be subjected to iteration, etc.,
-  // the published types don't actually allow it, so we have to jump through
-  // this hoop).
+  // Pull the laid-out positions out into an array. Invert the y-coordinate to
+  // transform Cytoscape's image-space coordinate system into our
+  // Cartesian-space. (Even though the cytoscape docs claim that the nodes
+  // collection can be subjected to iteration, etc., the published types don't
+  // actually allow it, so we have to jump through this hoop).
   const cy_pos: { id: string, x: number, y: number }[] = [];
   for (let i=0; i < c.nodes().length; i += 1) {
     const n = c.nodes()[i];
@@ -117,7 +118,7 @@ export function cytoscapeLayout(nodes: GraphNode[], edges: GraphEdge[], layout: 
     cy_pos[i] = {
       id: n.id(),
       x: p.x,
-      y: p.y,
+      y: -p.y,
     }
   }
 
